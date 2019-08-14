@@ -1,0 +1,13 @@
+// export const HOST_SRC = "http://192.168.50.134:8082/"
+
+// export const HOST_SRC = "http://192.168.50.176:8082/"
+
+
+export const BASE_PATH = "http://60.12.107.220:9090"
+// export const BASE_PATH = "http://192.168.50.200:8080"
+// export const BASE_PATH = "http://192.168.50.220:8082"
+// export const BASE_PATH = "http://192.168.50.175:8082"
+export const HOST_SRC = BASE_PATH + "/"
+
+
+export const HOST = HOST_SRC + "lgt";

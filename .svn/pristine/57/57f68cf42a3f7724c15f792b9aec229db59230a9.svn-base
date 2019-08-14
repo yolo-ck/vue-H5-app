@@ -1,0 +1,256 @@
+<template>
+  <div class="page">
+    <mt-header title="审批详情">
+      <router-link to="/ownerHome/ownerAudit" slot="left">
+        <mt-button icon="back"></mt-button>
+      </router-link>
+    </mt-header>
+
+    <div class="van-cell van-coupon-cell">
+      <div class="van-cell__title">
+        <span style="font-weight:bold">姓&emsp;&emsp;名:</span>
+        <span style="margin-left:30px;">{{dataList.userName}}</span>
+      </div>
+    </div>
+
+    <div class="van-cell van-coupon-cell">
+      <div class="van-cell__title">
+        <span style="font-weight:bold">申请时间:</span>
+        <span style="margin-left:30px;">{{dataList.applyTime}}</span>
+      </div>
+    </div>
+
+    <div class="van-cell van-coupon-cell">
+      <div class="van-cell__title">
+        <span style="font-weight:bold">联系方式:</span>
+        <span style="margin-left:30px;">{{dataList.phone}}</span>
+      </div>
+    </div>
+
+    <div class="van-cell van-coupon-cell">
+      <div class="van-cell__title">
+        <span style="font-weight:bold">申请类型</span>
+        <span style="margin-left:30px;">{{dataList.applicationType}}</span>
+      </div>
+    </div>
+
+    <div class="van-cell van-coupon-cell">
+      <div class="van-cell__title">
+        <span style="font-weight:bold">内&emsp;&emsp;容:</span>
+        <span style="margin-left:30px;">{{dataList.content}}</span>
+      </div>
+    </div>
+
+    <div class="van-cell van-coupon-cell">
+      <div class="van-cell__title">
+        <span style="font-weight:bold">申请内容:</span>
+        <span style="margin-left:30px;">{{dataList.reviewContent}}</span>
+      </div>
+    </div>
+
+    <div
+      class="van-cell van-coupon-cell"
+      v-if="dataList.applicationType=='首次申请'"
+      @click="showPicker"
+    >
+      <div class="van-cell__title">
+        <span style="font-weight:bold">工作单位:</span>
+        <span style="margin-left:30px;">{{address}}</span>
+      </div>
+    </div>
+
+    <mt-button class="success" size="normal" type="primary" @click="pass">审批通过</mt-button>
+    <!-- <mt-button class="fail" size="normal" type="primary" @click="nopass">审批不通过</mt-button> -->
+  </div>
+</template>
+<script>
+import { HOST } from "../../data/data.js";
+
+export default {
+  name: "auditDetail",
+  data() {
+    return {
+      addressArr: [],
+      address: "请选择工作单位",
+
+      dataList: "",
+      id: "",
+      workUnit: "",
+      shopData: ""
+    };
+  },
+  computed: {
+    userId() {
+      return this.$store.getters.getUserId;
+    }
+  },
+  mounted() {
+    this.dataList = this.$route.params.personMessage;
+
+    console.log(this.dataList);
+
+    this.id = this.dataList.id;
+    const url = HOST + "/a/shops/lgtShops/getShopsByUserId";
+
+    this.$http({
+      method: "post",
+      url: url,
+      data: {
+        userId: this.userId
+      }
+    }).then(result => {
+      var data = result.data.data;
+      this.shopData = data;
+      console.log(data);
+      for (var i = 0; i < data.length; i++) {
+        this.addressArr.push({ text: data[i].name });
+      }
+    });
+  },
+  methods: {
+    showPicker() {
+      if (!this.picker) {
+        this.picker = this.$createPicker({
+          title: "请选择商铺",
+          data: [this.addressArr],
+          onSelect: this.selectHandle,
+          onCancel: this.cancelHandle
+        });
+      }
+      this.picker.show();
+    },
+    selectHandle(selectedVal, selectedIndex, selectedText) {
+      this.address = selectedText.join(" ");
+
+      this.workUnit = this.shopData[selectedIndex].id;
+    },
+    cancelHandle() {},
+    pass() {
+      console.log(this.addressArr.length);
+      // debugger;
+      if (this.dataList.applicationType == "首次申请") {
+        if (this.address == "请选择工作单位") {
+          this.$createToast({
+            type: "提示",
+            txt: "请选择工作单位",
+            time: 1000
+          }).show();
+          return;
+        }
+      }
+      const toast = this.$createToast({
+        txt: "加载中...",
+        time: 0,
+        mask: true
+      });
+      toast.show();
+
+      const url = HOST + "/a/user/audit/audit";
+      this.$http({
+        method: "post",
+        url: url,
+        data: {
+          ownerId: this.userId,
+          isPass: "0",
+          id: this.id,
+          workUnit: this.workUnit
+        }
+      })
+        .then(data => {
+          toast.hide();
+          if (data.data.success) {
+            this.$createToast({
+              type: "提示",
+              txt: "成功审批",
+              time: 1000
+            }).show();
+            setTimeout(() => {
+              this.$router.push({ name: "ownerAudit" });
+            }, 1000);
+          } else {
+            this.$createToast({
+              type: "提示",
+              txt: "审批出错",
+              time: 1000
+            }).show();
+          }
+        })
+        .catch(error => {
+          toast.hide();
+          this.$createToast({
+            type: "提示",
+            txt: "审批出错",
+            time: 1000
+          }).show();
+        });
+    },
+    nopass() {
+      const toast1 = this.$createToast({
+        txt: "加载中...",
+        time: 0,
+        mask: true
+      });
+      toast1.show();
+      const url = HOST + "/a/user/audit/audit";
+      this.$http({
+        method: "post",
+        url: url,
+        data: {
+          ownerId: this.userId,
+          isPass: "1",
+          id: this.id
+        }
+      })
+        .then(data => {
+          toast1.hide();
+          this.$createToast({
+            type: "提示",
+            txt: "成功审批",
+            time: 1000
+          }).show();
+          setTimeout(() => {
+            this.$router.push({ name: "ownerAudit" });
+          }, 1000);
+        })
+        .catch(error => {
+          toast1.hide();
+          this.$createToast({
+            type: "提示",
+            txt: "审批出错",
+            time: 1000
+          }).show();
+        });
+    }
+  },
+
+  components: {}
+};
+</script>
+<style scoped>
+/* .success {
+  margin-top: 20px;
+  margin-left: 7%;
+  width: 38%;
+  border-radius: 24px;
+} */
+.success {
+  margin-top: 20px;
+  margin-left: 20%;
+  width: 60%;
+  border-radius: 24px;
+}
+.fail {
+  width: 38%;
+  border-radius: 24px;
+  margin-left: 26px;
+}
+
+.page {
+  background: rgb(237, 237, 237);
+}
+.line {
+  display: none;
+}
+</style>
+
+

@@ -1,0 +1,547 @@
+<template>
+<div class="page">
+  <div id="ownerHome" >
+    <div class="main_content">
+    <cube-scroll ref="scroll" :options="{}">
+      <div class="notice" @click="">
+        <notice/>
+      </div>
+
+      <div id="weather">
+        <div class="location" v-if="binding">
+          <div class="pos">{{locationName}}</div>
+          <van-icon @click="getLocation" size="20px" class="locate" name="aim"/>
+        </div>
+        <div id="wea1">
+          <iframe
+            scrolling="no"
+            src="https://tianqiapi.com/api.php?style=ti&skin=pitaya"
+            frameborder="0"
+            width="100%"
+            height="100px"
+            allowtransparency="true"
+          ></iframe>
+        </div>
+        <div id="weabg"></div>
+        <div id="welcome">欢迎{{userName}}业主登录</div>
+
+        <div id="eventMessage">
+          <div class="eventBox">
+            <p>{{changeRoom}}项</p>
+            <p class="eventText">房间变更</p>
+          </div>
+          <div class="eventBox">
+            <p>{{changePhone}}项</p>
+            <p class="eventText">手机变更</p>
+          </div>
+          <div class="eventBox">
+            <p>{{firstAudit}}项</p>
+            <p class="eventText">首次申请</p>
+          </div>
+          <div class="eventBox">
+            <p>{{newAddRoom}}项</p>
+            <p class="eventText">新增地址</p>
+          </div>
+        </div>
+        <a-nav @deviceValid="deviceValid"/>
+      </div>
+
+
+    </cube-scroll>
+    </div>
+  </div>
+  </div>
+</template>
+
+<script>
+  import {HOST} from '../../data/data.js';
+  import {Dialog} from 'vant';
+  import {Indicator} from 'mint-ui';
+  import ANav from './components/a-nav';
+  import Notice from './components/notice';
+
+  export default {
+    name: 'ownerHome',
+    components: {Notice, ANav},
+    data() {
+      return {
+        binding: false,
+        changePhone: '',
+        changeRoom: '',
+        firstAudit: '',
+        userName: '',
+        newAddRoom: '',
+        locationName: '未知',
+      };
+    },
+    computed: {
+      userId() {
+        return this.$store.getters.getUserId;
+      },
+      deviceId() {
+        return this.$store.getters.getUUID;
+      },
+      userInfo() {
+        return this.$store.getters.getUserInfo;
+      },
+      binded() {
+        return this.$store.getters.getBinded;
+      },
+      haveAddress() {
+        return this.$store.getters.getHaveAddress;
+      },
+    },
+    mounted() {
+
+      this.binding = this.binded == 'true' && this.haveAddress == 'true';
+      // 获取次数;
+      var that = this;
+      const url = HOST + '/a/mobile/user/register/getOwnerCount';
+      this.$http({
+        method: 'post',
+        url: url,
+
+        data: {
+          userId: this.userId,
+        },
+      }).then(function (data) {
+        that.changePhone = data.data.changePhone;
+        that.changeRoom = data.data.changeRoom;
+        that.firstAudit = data.data.firstAudit;
+        that.userName = data.data.userName;
+        that.newAddRoom = data.data.newAddRoom;
+      });
+
+      this.timer = setInterval(() => {
+        this.getUserInfo();
+      }, 5000);
+      this.getUserInfo();
+      if (this.binding) {
+        this.getLocation();
+      }
+    },
+    destroyed() {
+      clearInterval(this.timer);
+    },
+    methods: {
+      saveLocation(longitude, latitude) {
+        this.$store.commit('setLocation', {
+          longitude: longitude,
+          latitude: latitude,
+        });
+      },
+      getLocation() {
+        if (navigator.connection.type != 'wifi') {
+          this.show = true;
+          console.log(navigator.connection);
+          setTimeout(() => {
+            this.show = false;
+          }, 1000);
+        }
+        if (!navigator.onLine) {
+          this.show = true;
+          this.hintWafiText = '请连接接网络！';
+          console.log(navigator.onLine);
+          setTimeout(() => {
+            this.show = false;
+          }, 1000);
+        }
+
+        const isProd = process.env.NODE_ENV === 'production';
+        if (isProd) {
+          var that = this;
+
+          that.locationName = '获取中...';
+          baidumap_location.getCurrentPosition(
+            function (result) {
+              // console.log(JSON.stringify(result, null, 4));
+              console.log(JSON.stringify(result, null, 4));
+
+              var longitude = result.longitude;
+              var latitude = result.latitude;
+
+              var addr = result.addr;
+
+              var locationDescribe = result.locationDescribe;
+
+              that.saveLocation(longitude, latitude);
+
+              if (addr && locationDescribe) {
+                that.locationName = addr + '  ' + locationDescribe;
+              } else {
+                that.locationName = '{' + longitude + ',' + latitude + '}';
+              }
+            },
+            function (error) {
+              that.locationName = '定位失败';
+            },
+          );
+        } else {
+          // 进行定位
+
+          // onSuccess Callback
+          // This method accepts a Position object, which contains the
+          // current GPS coordinates
+          //
+
+          var that = this;
+          var onSuccess = function (position) {
+            // alert('Latitude: '          + position.coords.latitude          + '\n' +
+            //       'Longitude: '         + position.coords.longitude         + '\n' +
+            //       'Altitude: '          + position.coords.altitude          + '\n' +
+            //       'Accuracy: '          + position.coords.accuracy          + '\n' +
+            //       'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
+            //       'Heading: '           + position.coords.heading           + '\n' +
+            //       'Speed: '             + position.coords.speed             + '\n' +
+            //       'Timestamp: '         + position.timestamp                + '\n');
+
+            console.log('定位完成');
+
+            var longitude = position.coords.longitude;
+            var latitude = position.coords.latitude;
+
+            that.saveLocation(longitude, latitude);
+
+            that.locationName = '[' + longitude + ',' + latitude + ']';
+
+            // that.$http.get(
+            // 	`http://api.map.baidu.com/geocoder/v2/?coordtype=wgs84ll&location=${latitude},${longitude}&output=json&ak=C1WWxGz9ocHLrSpYiFc4p0u7mLFef4h7`
+            that.$http
+            .get(
+              `http://60.12.107.220:9090/geocoder/v2/?coordtype=wgs84ll&location=${latitude},${longitude}&output=json&ak=C1WWxGz9ocHLrSpYiFc4p0u7mLFef4h7`,
+            )
+            .then(res => {
+              // console.log(res)
+              // console.log(JSON.parse(res.data))
+              // console.log(resData.result.addressComponent.street)
+              // debugger;
+              that.locationName =
+                res.data.result.formatted_address +
+                '  ' +
+                res.data.result.sematic_description;
+              // .substr(0, (res.data.substr(29,res.data.length-1)).length - 1)
+            });
+          };
+
+          // onError Callback receives a PositionError object
+          //
+          function onError(error) {
+            alert(
+              'code: ' + error.code + '\n' + 'message: ' + error.message + '\n',
+            );
+          }
+
+          onSuccess({
+            coords: {longitude: 120.2323265875, latitude: 30.8683593146},
+          });
+        }
+
+        // const isProd = process.env.NODE_ENV === "production";
+        // if (isProd) {
+        //   alert(device.platform);
+
+        //   navigator.geolocation.getCurrentPosition(onSuccess, onError);
+        // } else {
+        //   // 30.8683593146,120.2323265875
+        //   onSuccess({
+        //     coords: { longitude: 120.2323265875, latitude: 30.8683593146 }
+        //   });
+        // }
+      },
+      getUserInfo() {
+        const url = HOST + '/a/mobile/user/register/getUserInfo';
+        this.$http({
+          method: 'post',
+          url: url,
+
+          data: {
+            userId: this.userId,
+          },
+        })
+        .then(result => {
+          var userInfo = result.data;
+
+          this.$store.commit('setUserInfo', userInfo);
+
+          this.$store.commit('setBinded', userInfo.isBinding);
+          this.$store.commit('setHaveAddress', userInfo.haveAddress);
+
+          var auditMacArray = userInfo.auditMac;
+
+          var hasSumited = false;
+          for (var idx in auditMacArray) {
+            var auditMac = auditMacArray[idx];
+            if (auditMac && auditMac.reviewContent == this.deviceId) {
+              hasSumited = true;
+            }
+          }
+
+
+
+          if (!hasSumited && userInfo.phoneMacAddress != this.deviceId) {
+            Dialog.alert({
+              title: '提示',
+              message: '此设备尚未绑定(' + this.deviceId + ')',
+              confirmButtonText: '提交绑定',
+            }).then(() => {
+              // on close
+
+              this.changePhoneAction(this.deviceId);
+            });
+          }
+
+          console.log(userInfo);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      },
+      changePhoneAction(deviceId) {
+
+           if (typeof(device) == "undefined") {
+             return;
+           }
+
+        const url = HOST + '/OpenDoor/changePhone';
+
+        Indicator.open({
+          text: '提交中...',
+          spinnerType: 'fading-circle',
+        });
+
+        this.$http({
+          method: 'post',
+          url: url,
+
+          data: {
+            userId: this.userId,
+            MACAddress: deviceId,
+          },
+        })
+        .then(result => {
+          Indicator.close();
+
+          if (result.data.code == 0) {
+            Toast({message: result.data.message, position: 'bottom'});
+          }
+        })
+        .catch(function (error) {
+          Indicator.close();
+          console.log(error);
+        });
+      },
+      // 手机开门 设备验证
+      deviceValid(path) {
+        if (this.deviceId != this.userInfo.phoneMacAddress) {
+          Dialog.alert({
+            title: '提示',
+            message: '当前设备绑定审核中！',
+          }).then(() => {
+            // on close
+          });
+        } else {
+          this.$router.push({name: path});
+        }
+
+      },
+
+    },
+  };
+</script>
+<style>
+
+
+</style>
+
+
+<style scoped>
+  .notice {
+    width: 90%;
+    margin: 0 auto;
+    margin-top: 20px;
+    background-color: #f00;
+  }
+
+.page {
+  background: #26A2FF;
+}
+
+.main_content{
+
+   position: absolute;
+   /* height:100%; */
+   /* height: calc(100% - env(safe-area-inset-top)); */
+   top: 0px;
+    bottom: 0px;
+    width: 100%;
+   /* bottom: calc(40px + env(safe-area-inset-bottom)) */
+
+}
+  #ownerHome {
+    /* height: 100%; */
+    width: 100%;
+    /*overflow: auto;*/
+    /*background: rgb(59, 167, 240);*/
+    background-image: linear-gradient(to bottom, rgb(59, 167, 240) 270px, rgb(220, 222, 226) 370px);
+    /*background-image: linear-gradient(to bottom, #fff 0%, #333 100%);*/
+    top: 0px;
+    bottom: 0px;
+    top: env(safe-area-inset-top);
+    position:absolute;
+
+  }
+
+
+  #weather {
+    /* height: 470px; */
+    width: 90%;
+    margin: 20px 5%;
+    margin-top: 10px;
+    min-height: calc(100% - 40px);
+    background-color: #fefefe;
+  }
+
+  #banner {
+    width: 100%;
+    position: absolute;
+    bottom: 0px;
+    background: white;
+    height: 110px;
+  }
+
+  /* #bottom {
+    position: fixed;
+    bottom: 0;
+    height: 55px;
+    background: white;
+    width: 100%;
+    font-size: 14px;
+  } */
+  #weabg {
+    width: 100%;
+    height: 120px;
+    background-image: url(../../img/owner.png);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+  }
+
+  #wea1 {
+    height: 100px;
+    width: 100%;
+    padding-top: 10px;
+  }
+
+  #welcome {
+    background: rgb(79, 105, 240);
+    color: white;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    border-radius: 20px;
+    width: 60%;
+    margin: 20px auto;
+  }
+
+  #eventMessage {
+    margin-top: 40px;
+    height: 60px;
+    width: 100%;
+    display: block;
+  }
+
+  .eventBox {
+    /* border: 1px solid; */
+    height: 100%;
+    width: 25%;
+    float: left;
+    text-align: center;
+  }
+
+  .eventText {
+    padding-top: 5px;
+    font-size: 14px;
+    color: rgb(182, 183, 184);
+  }
+
+  .bannerTitle {
+    height: 40px;
+    border-bottom: 1px solid rgb(232, 234, 238);
+    line-height: 40px;
+    padding-left: 5%;
+    width: 100%;
+  }
+
+  .nav {
+    text-align: center;
+    float: left;
+    width: 25%;
+    height: 100%;
+    font-size: 14px;
+  }
+
+  .nav img {
+    padding-top: 35px;
+  }
+
+  .nav p {
+    padding-top: 10px;
+  }
+
+  .myBtn {
+    text-align: center;
+    float: right;
+    padding-right: 10px;
+  }
+
+  #bottom img {
+    padding-top: 5px;
+  }
+
+  #bottom p {
+    padding-top: 2px;
+  }
+
+  .homeBtn {
+    color: blue;
+    text-align: center;
+    float: left;
+    padding-left: 10px;
+  }
+
+  .location {
+    padding-top: 10px;
+    /*height: 40px;*/
+    /*color: white;*/
+    /*white-space: nowrap;*/
+    /*color: rgb(182, 183, 184);*/
+    color: #a66753;
+    font-size: 16px;
+    overflow: hidden;
+    /*text-overflow: ellipsis;*/
+    /*background-color: #0a9df9;*/
+    width: 100%;
+  }
+
+  .location .pos {
+    /*height: 100%;*/
+    height: 40px;
+    line-height: 20px;
+    /*width: calc(100% - 30px);*/
+    float: left;
+    /*text-indent: 10px;*/
+    padding-left: 10px;
+    padding-right: 30px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .location .locate {
+    position: absolute;
+    right: 25px;
+    margin-top: 0px;
+    /* height: 30px;
+    pos
+    width: 60px; */
+  }
+</style>
+

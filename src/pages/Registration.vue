@@ -1,0 +1,236 @@
+<template>
+  <div class="page">
+    <mt-header title="注册">
+      <router-link to="/" slot="left">
+        <mt-button icon="back"></mt-button>
+      </router-link>
+    </mt-header>
+    <div id="iphone">
+      <span>+86</span>
+      <input placeholder="手机号" type="text" v-model="phone" />
+    </div>
+    <div id="textMessage">
+      <input placeholder="请输入短信验证码" type="text" v-model="msgCode" />
+      <span @click="sendSmsCode() ">{{btnContent}}</span>
+    </div>
+    <div id="password">
+      <input placeholder="密码" type="password" v-model="password" />
+    </div>
+    <div id="password">
+      <input placeholder="重复密码" type="password" v-model="repeatPassword" />
+    </div>
+    <div class="btn1">
+      <mt-button type="primary" size="large" @click="verificationCode()">注册</mt-button>
+    </div>
+    <div id="back">
+      <p>
+        <router-link to="/" slot="left">
+          <span style="color: rgb(58, 182, 246);">已有账号，返回登录</span>
+        </router-link>
+      </p>
+    </div>
+  </div>
+</template>
+
+<script>
+import { Toast } from "vant";
+// import { Toast } from "mint-ui";
+import { HOST } from "../data/data.js";
+export default {
+  name: "Registration",
+  data() {
+    return {
+      phone: "",
+      password: "",
+      repeatPassword: "",
+      msg: "",
+      msgCode: "",
+      phoneMacAddress: "", //手机MAC地址
+      btnContent: "获取验证码",
+      time: 0,
+      mac: "",
+      disabled: true
+    };
+  },
+  computed: {
+    deviceId() {
+      return this.$store.getters.getUUID;
+    }
+  },
+  methods: {
+    // 获取验证码
+    sendSmsCode() {
+      var that = this;
+      var reg = 11 && /^((13|14|15|17|18|19)[0-9]{1}\d{8})$/; //手机号正则验证
+      var phoneNum = this.phone;
+      if (!phoneNum) {
+        //未输入手机号
+        Toast("请输入手机号码");
+        return;
+      }
+      if (!reg.test(phoneNum)) {
+        //手机号不合法
+        Toast("您输入的手机号码不合法，请重新输入");
+        return;
+      }
+
+      if (this.disabled) {
+        this.time = 60;
+        this.disabled = false;
+        this.timer();
+
+        // 获取验证码请求;
+        const url = HOST + "/a/mobile/user/register/sendMsgPhone";
+
+        this.$http({
+          method: "post",
+          url: url,
+
+          data: {
+            phone: that.phone
+          }
+        })
+          .then(function(data) {
+            console.log(data);
+            console.log(1);
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+      }
+    },
+    timer() {
+      if (this.time > 0) {
+        this.time--;
+        this.btnContent = this.time + "s后重新获取";
+
+        var timer = setTimeout(this.timer, 1000);
+      } else if (this.time == 0) {
+        this.btnContent = "获取验证码";
+        clearTimeout(timer);
+        this.disabled = true;
+      }
+    },
+    //  验证验证码
+    verificationCode() {
+      // var phoneNum = this.phone; //手机号
+      // var verifyNum = this.msgCode; //验证码
+
+      var reg = 11 && /^((13|14|15|17|18|19)[0-9]{1}\d{8})$/; //手机号正则验证
+      var phoneNum = this.phone;
+      if (!phoneNum) {
+        //未输入手机号
+        Toast("请输入手机号码");
+        return;
+      }
+      if (!reg.test(phoneNum)) {
+        //手机号不合法
+        Toast("您输入的手机号码不合法，请重新输入");
+        return;
+      }
+
+      if (this.password == "" || this.repeatPassword == "") {
+        Toast("密码不能为空");
+        return;
+      }
+
+      if (this.password != this.repeatPassword) {
+        Toast("两次密码输入不同，请您重新输入");
+        return;
+      }
+
+      if (this.msgCode == "") {
+        Toast("验证码不能为空");
+        return;
+      }
+
+      var that = this;
+      const url = HOST + "/a/mobile/user/register/registration";
+      let toast = this.$createToast({
+        type: "warn",
+        txt: "注册中...",
+        time: 0,
+        mask: true
+      });
+      toast.show();
+      this.$http({
+        method: "post",
+        url: url,
+        data: {
+          phone: that.phone,
+          msgCode: that.msgCode,
+          password: that.password,
+          repeatPassword: that.repeatPassword,
+          phoneMacAddress: that.deviceId
+        }
+      }).then(response => {
+        toast.hide();
+        Toast(response.data.msg);
+
+        if (response.data.success) {
+          // that.$router.push({ name: "login" });
+          that.$router.go(-1);
+        }
+      });
+    },
+    fillContent() {
+      // console.log("fillContent");
+    },
+    mounted() {}
+  }
+};
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+/* #Registration {
+  height: 100%;
+} */
+#iphone > span {
+  border-right: 1px solid rgb(196, 196, 196);
+  padding-right: 4%;
+}
+#iphone {
+  width: 85%;
+  margin: 0 auto;
+  margin-top: 10%;
+  border-bottom: 1px solid rgb(196, 196, 196);
+  padding: 3%;
+}
+#textMessage,
+#password {
+  width: 85%;
+  margin: 0 auto;
+  margin-top: 2%;
+  border-bottom: 1px solid rgb(196, 196, 196);
+  padding: 3%;
+}
+#textMessage > span {
+  color: rgb(240, 205, 89);
+  border-left: 1px solid rgb(196, 196, 196);
+  padding-left: 4%;
+}
+input {
+  /* height: 30px; */
+  /* padding-left: 2%; */
+  outline: none;
+  border: none;
+  width: 55%;
+  /* border-left: 1px solid black; */
+}
+.btn {
+  margin: 0 auto;
+}
+#back {
+  margin-top: 5%;
+  float: right;
+  padding-right: 19px;
+}
+#back p {
+  color: rgb(58, 182, 246);
+}
+
+.btn1 {
+  padding: 20px 15px;
+}
+</style>

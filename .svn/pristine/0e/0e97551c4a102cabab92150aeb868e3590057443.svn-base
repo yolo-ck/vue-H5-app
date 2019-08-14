@@ -1,0 +1,297 @@
+<template>
+  <div>
+    <!--    {{addresses}}-->
+    <div v-for="(item,index) in addresses" :key="index" @click="selectAddress(index,$event)">
+      <mt-cell :title="addressDisplay(index,item)">
+        <span
+          :class="{ active: isActive }"
+          class="mint-cell-flag"
+          v-if="index == 0"
+          @click="addRow"
+        >&nbsp;&nbsp;+&nbsp;&nbsp;</span>
+        <span class="mint-cell-flag" v-else @click="removeRow(index)">&nbsp;&nbsp;-&nbsp;&nbsp;</span>
+      </mt-cell>
+    </div>
+  </div>
+</template>
+
+<script>
+import { HOST } from "../data/data.js";
+import { Indicator } from "mint-ui";
+// import { Toast } from "mint-ui";
+import { MessageBox } from "mint-ui";
+import { Dialog } from "vant";
+
+import { Toast } from "vant";
+
+const MAX_ADDRESS_COUNT = 3;
+const ADDRESS_COUNT = 500;
+
+export default {
+  name: "AddressList",
+  props: ["first", "data", "addshop", "firstAddShop"],
+  data() {
+    return {
+      addresses: [],
+
+      asyncSelectedIndex: [0, 0, 0],
+      initSize: 0,
+      isActive: false,
+      auditSize: "",
+      total: ""
+    };
+  },
+  computed: {
+    userId() {
+      return this.$store.getters.getUserId;
+    },
+    userType() {
+      return this.$store.getters.getUserType;
+    }
+  },
+  methods: {
+    loadAddressData(addressId) {
+      return this.$http({
+        method: "post",
+        url: HOST + "/OpenDoor/getAddressJson",
+        data: {
+          addressId: addressId
+        }
+      });
+    },
+    selectAddress(index, event) {
+      if (event.target.className == "mint-cell-flag") {
+        return;
+      }
+
+      this.$router.push({
+        name: "selectCommunity",
+        params: { data: this.addresses, index: index }
+      });
+    },
+
+    addressDisplay: function(index, address) {
+      if (!address.roomName.length > 0) {
+        return "请选择地址";
+      }
+
+      return (
+        " " +
+        address.communityName +
+        " - " +
+        address.buildingName +
+        " - " +
+        address.roomName
+      );
+    },
+
+    addRow() {
+      console.log(this.userType);
+      if (this.userType == "firstBinding") {
+        this.auditSize = this.$store.getters.getUserInfo.total - this.initSize;
+
+        if (this.first) {
+          this.auditSize = 0;
+        }
+        if (this.data) {
+          if (this.addresses.length >= ADDRESS_COUNT - this.auditSize) {
+            Toast({
+              message: "每人最多只能提交绑定50个地址！(包含正在审核的)",
+              position: "bottom",
+              duration: 3000
+            });
+
+            return;
+          }
+        } else {
+          if (this.addresses.length >= MAX_ADDRESS_COUNT - this.auditSize) {
+            Toast({
+              message: "每人最多只能提交绑定3个地址！(包含正在审核的)",
+              position: "bottom",
+              duration: 3000
+            });
+
+            return;
+          }
+        }
+        var item = {
+          buildingName: "",
+          communityName: "",
+          id: "",
+          community: "",
+          building: "",
+          room: "",
+          roomName: ""
+        };
+        this.addresses.push(item);
+      } else {
+        if (this.$store.state.staffId) {
+          const urls = HOST + "/a/mobile/user/register/getUserInfo";
+          this.$http({
+            method: "post",
+            url: urls,
+            data: {
+              userId: this.$store.state.staffId
+            }
+          }).then(result => {
+            var total = result.data.total;
+            console.log(total);
+            this.auditSize = total - this.initSize;
+          });
+        } else {
+          this.auditSize =
+            this.$store.getters.getUserInfo.total - this.initSize;
+        }
+
+        if (this.first) {
+          this.auditSize = 0;
+        }
+        if (this.data) {
+          if (this.addresses.length >= ADDRESS_COUNT - this.auditSize) {
+            Toast({
+              message: "每人最多只能提交绑定50个地址！(包含正在审核的)",
+              position: "bottom",
+              duration: 3000
+            });
+
+            return;
+          }
+        } else {
+          if (this.addresses.length >= MAX_ADDRESS_COUNT - this.auditSize) {
+            Toast({
+              message: "每人最多只能提交绑定3个地址！(包含正在审核的)",
+              position: "bottom",
+              duration: 3000
+            });
+
+            return;
+          }
+        }
+        var item = {
+          buildingName: "",
+          communityName: "",
+          id: "",
+          community: "",
+          building: "",
+          room: "",
+          roomName: ""
+        };
+        this.addresses.push(item);
+      }
+    },
+    removeRow(index) {
+      var item = this.addresses[index];
+
+      if (item.id.length > 0) {
+        Dialog.confirm({
+          title: "提示",
+          message: "确认要删除此地址"
+        })
+          .then(() => {
+            this.addresses.splice(index, 1);
+
+            const url = HOST + "/a/mobile/user/register/delRent";
+            this.$http({
+              method: "post",
+              url: url,
+              data: {
+                id: item.id
+              }
+            })
+              .then(data => {
+                console.log(data);
+                if (data.data.code == 0) {
+                  Toast.success("删除成功");
+                } else {
+                  Toast.fail("删除失败");
+                }
+                console.log(1);
+              })
+              .catch(error => {
+                console.log(error);
+              });
+          })
+          .catch(() => {
+            // on cancel
+          });
+      } else {
+        this.addresses.splice(index, 1);
+      }
+    },
+
+    loadDefaultAddresses() {
+      var id = this.userId;
+
+      // if (this.$store.state.staffId) {
+      //   id = this.$store.state.staffId;
+      // }
+      const url1 = HOST + "/OpenDoor/getBindingAddress";
+      this.$http({
+        method: "post",
+        url: url1,
+        data: {
+          userId: id
+        }
+      }).then(result => {
+        // debugger;
+        Indicator.close();
+        var data = result.data.data;
+        console.log(data);
+        this.addresses = data;
+        // this.addresses = [];
+        this.initSize = this.addresses.length;
+
+        console.log(this.addresses);
+
+        if (this.addresses == "") {
+          this.addresses = [];
+        }
+
+        if (this.addresses.length == 0) {
+          this.addRow();
+        }
+      });
+    },
+    getAddresses() {
+      if (this.$route.params.data) {
+        console.log("getAddresses");
+
+        this.addresses = [];
+        this.addresses = this.$route.params.data;
+        // Vue.set(this,addresses,this.$route.params.data)
+      }
+    }
+  },
+  beforeUpdate() {
+    this.getAddresses();
+  },
+  activated() {
+    if (this.userType == "firstBinding" || this.userType == "ownerAddShop") {
+      this.getAddresses();
+      // this.addRow();
+      // this.removeRow(this.addresses.length - 1);
+      // this.addresse = this.addresse;
+    } else {
+      this.getAddresses();
+    }
+  },
+
+  mounted() {
+    if (this.addshop) {
+      this.isActive = true;
+    }
+    if (this.first) {
+      this.addRow();
+    } else {
+      this.loadDefaultAddresses();
+    }
+  },
+  watch: {}
+};
+</script>
+<style scoped>
+.active {
+  display: none;
+}
+</style>
+

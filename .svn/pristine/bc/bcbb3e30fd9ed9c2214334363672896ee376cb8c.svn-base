@@ -1,0 +1,220 @@
+<template>
+  <div>
+    <div v-for="(item,index) in shopAddress" :key="index" @click="selectAddress(index,$event)">
+      <mt-cell :title="addressDisplay(index,item)">
+        <span
+          :class="{ active: isActive }"
+          class="mint-cell-flag"
+          v-if="index == 0"
+          @click="addRow"
+        >&nbsp;&nbsp;+&nbsp;&nbsp;</span>
+        <span class="mint-cell-flag" v-else @click="removeRow(index)">&nbsp;&nbsp;-&nbsp;&nbsp;</span>
+      </mt-cell>
+    </div>
+  </div>
+</template>
+
+<script>
+import { HOST } from "../data/data.js";
+import { Indicator } from "mint-ui";
+// import { Toast } from "mint-ui";
+import { MessageBox } from "mint-ui";
+import { Dialog } from "vant";
+
+import { Toast } from "vant";
+
+const MAX_ADDRESS_COUNT = 3;
+const ADDRESS_COUNT = 10;
+
+export default {
+  name: "firstAddShop",
+  props: ["firstAddShop", "data"],
+  data() {
+    return {
+      shopAddress: [],
+
+      asyncSelectedIndex: [0, 0, 0],
+      initSize: 0,
+      isActive: false
+    };
+  },
+  computed: {
+    userId() {
+      return this.$store.getters.getUserId;
+    }
+  },
+  methods: {
+    loadAddressData(addressId) {
+      return this.$http({
+        method: "post",
+        url: HOST + "/OpenDoor/getAddressJson",
+        data: {
+          addressId: addressId
+        }
+      });
+    },
+    selectAddress(index, event) {
+      if (event.target.className == "mint-cell-flag") {
+        return;
+      }
+
+      this.$router.push({
+        name: "selectCommunity1",
+        params: { data: this.shopAddress, index: index }
+      });
+    },
+
+    addressDisplay: function(index, address) {
+      if (!address.roomName.length > 0) {
+        return "请选择地址";
+      }
+
+      return (
+        " " +
+        address.communityName +
+        " - " +
+        address.buildingName +
+        " - " +
+        address.roomName
+      );
+    },
+
+    addRow() {
+      var auditSize = this.$store.getters.getUserInfo.total - this.initSize;
+      console.log(this.$store.getters.getUserInfo);
+      if (this.firstAddShop) {
+        auditSize = 0;
+      }
+      if (this.data) {
+        console.log(this.shopAddress.length, this.initSize);
+        if (this.shopAddress.length >= ADDRESS_COUNT - auditSize) {
+          Toast({
+            message: "每人最多只能提交绑定10个地址！(包含正在审核的)",
+            position: "bottom",
+            duration: 3000
+          });
+          console.log(this.shopAddress);
+
+          return;
+        }
+      } else {
+        if (this.shopAddress.length >= MAX_ADDRESS_COUNT - auditSize) {
+          Toast({
+            message: "每人最多只能提交绑定3个地址！(包含正在审核的)",
+            position: "bottom",
+            duration: 3000
+          });
+
+          return;
+        }
+      }
+      var item = {
+        buildingName: "",
+        communityName: "",
+        id: "",
+        community: "",
+        building: "",
+        room: "",
+        roomName: ""
+      };
+      this.shopAddress.push(item);
+    },
+    addItem(item){
+      this.shopAddress.push(item);
+    },
+    removeRow(index) {
+      var item = this.shopAddress[index];
+
+      if (item.id.length > 0) {
+        Dialog.confirm({
+          title: "提示",
+          message: "确认要删除此地址"
+        })
+          .then(() => {
+            this.shopAddress.splice(index, 1);
+
+            const url = HOST + "/a/mobile/user/register/delRent";
+            this.$http({
+              method: "post",
+              url: url,
+              data: {
+                id: item.id
+              }
+            })
+              .then(data => {
+                console.log(data);
+                if (data.data.code == 0) {
+                  Toast.success("删除成功");
+                } else {
+                  Toast.fail("删除失败");
+                }
+                console.log(1);
+              })
+              .catch(error => {
+                console.log(error);
+              });
+          })
+          .catch(() => {
+            // on cancel
+          });
+      } else {
+        this.shopAddress.splice(index, 1);
+      }
+    },
+
+    loadDefaultAddresses() {
+      const url1 = HOST + "/OpenDoor/getBindingAddress";
+      this.$http({
+        method: "post",
+        url: url1,
+        data: {
+          userId: this.userId
+        }
+      }).then(result => {
+        // debugger;
+        Indicator.close();
+        var data = result.data.data;
+        console.log(data);
+        this.shopAddress = data;
+        this.initSize = this.shopAddress.length;
+      });
+
+      if (this.shopAddress == "") {
+        this.shopAddress = [];
+      }
+
+      if (this.shopAddress.length == 0) {
+        this.addRow();
+      }
+    },
+    getAddresses() {
+      if (this.$route.params.shopData) {
+        this.shopAddress = this.$route.params.shopData;
+      }
+    }
+  },
+  activated() {
+    this.getAddresses();
+    this.addRow();
+    this.removeRow(this.shopAddress.length - 1);
+  },
+
+  mounted() {
+    console.log(this.shopAddress.length);
+
+    this.isActive = true;
+
+    if (this.firstAddShop) {
+      this.addRow();
+    } else {
+      this.loadDefaultAddresses();
+    }
+  }
+};
+</script>
+<style scoped>
+.active {
+  display: none;
+}
+</style>
+

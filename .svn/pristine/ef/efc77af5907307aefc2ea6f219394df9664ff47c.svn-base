@@ -1,0 +1,164 @@
+<template>
+  <div>
+    <div v-for="(item,index) in addresses" :key="index" @click="showAddressPicker(index,$event)">
+      <mt-cell :title="item.name">
+        <span
+          :class="{ active: isActive }"
+          class="mint-cell-flag"
+          v-if="index == 0"
+          @click="addRow"
+        >&nbsp;&nbsp;+&nbsp;&nbsp;</span>
+        <span class="mint-cell-flag" v-else @click="removeRow(index)">&nbsp;&nbsp;-&nbsp;&nbsp;</span>
+      </mt-cell>
+    </div>
+  </div>
+</template>
+
+<script>
+import { HOST } from "../data/data.js";
+// import { Indicator } from "mint-ui";
+// import { Toast } from "mint-ui";
+import { MessageBox } from "mint-ui";
+import { Dialog } from "vant";
+
+import { Toast } from "vant";
+
+const MAX_ADDRESS_COUNT = 3;
+const ADDRESS_COUNT = 10;
+
+export default {
+  name: "addPersonAddress",
+  props: ["first", "data", "addshop"],
+  data() {
+    return {
+      addresses: [],
+      sendAddresses: [],
+      addressesList: [],
+      initSize: 0,
+      isActive: false
+    };
+  },
+  computed: {
+    userId() {
+      return this.$store.getters.getUserId;
+    }
+  },
+  methods: {
+    showAddressPicker: function(index, event) {
+      if (event.target.className == "mint-cell-flag") {
+        return;
+      }
+      var selectHandle = (selectedVal, selectedIndex, selectedText) => {
+        this.addresses[index].name = selectedText[0];
+        this.addresses[index].value = selectedVal[0];
+      };
+
+      this.Picker = this.$createPicker({
+        title: "请选择地址",
+        data: [this.addressesList],
+        onSelect: selectHandle,
+        onCancel: this.cancelHandle
+      });
+
+      this.Picker.show();
+    },
+
+    addressDisplay: function(index, address) {
+      return address.name;
+    },
+
+    addRow() {
+      var auditSize = this.$store.getters.getUserInfo.total - this.initSize;
+
+      if (this.first) {
+        auditSize = 0;
+      }
+
+      if (this.addresses.length >= MAX_ADDRESS_COUNT - auditSize) {
+        Toast({
+          message: "每人最多只能提交绑定3个地址！(包含正在审核的)",
+          position: "bottom",
+          duration: 3000
+        });
+
+        return;
+      }
+      var item = {
+        name: "请选择地址",
+        value: ""
+      };
+      this.addresses.push(item);
+      console.log(this.addresses);
+    },
+    removeRow(index) {
+      this.addresses.splice(index, 1);
+    },
+
+    loadDefaultAddresses() {
+      // debugger;
+      const url = HOST + "/OpenDoor/getBindingAddress";
+      this.$http({
+        method: "post",
+        url: url,
+
+        data: {
+          userId: this.userId
+        }
+      })
+        .then(result => {
+          var data = result.data.data;
+          if (this.data) {
+            data.forEach((ele, index) => {
+              if (this.data == ele.room) {
+                this.addresses.push({
+                  name:
+                    ele.communityName +
+                    "-" +
+                    ele.buildingName +
+                    "-" +
+                    ele.roomName,
+                  value: index
+                });
+              }
+            });
+          }
+          //   this.addressesList = data;
+          for (var i = 0; i < data.length; i++) {
+            this.addressesList.push({
+              text:
+                data[i].communityName +
+                "-" +
+                data[i].buildingName +
+                "-" +
+                data[i].roomName,
+              value: i
+            });
+          }
+          // this.addRow();
+        })
+        .catch(error => {
+          // Indicator.close();
+          console.log(error);
+        });
+    }
+  },
+  mounted() {
+    if (this.data) {
+      this.loadDefaultAddresses();
+    } else {
+      this.loadDefaultAddresses();
+      this.addRow();
+
+      if (this.addshop) {
+        this.isActive = true;
+      }
+    }
+  }
+};
+</script>
+<style scoped>
+.active {
+  display: none;
+}
+</style>
+

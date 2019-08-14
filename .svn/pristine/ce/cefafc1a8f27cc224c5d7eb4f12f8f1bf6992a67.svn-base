@@ -1,0 +1,88 @@
+<template>
+  <div>
+    <div id="personMessage">
+      <img src="../img/binding.png" class="img">
+      <div class="imgright">
+        <span id="personName">{{userInfo.userName}}</span>
+        <span v-if="binded" id="binding">已绑定</span>
+        <span v-else class="unbind">未绑定</span>
+        <!-- <van-tag v-if="binded"  plain type="primary">已绑定</van-tag> -->
+        <!-- <van-tag v-else plain>未绑定</van-tag> -->
+      </div>
+    </div>
+    <div class="line"></div>
+  </div>
+</template>
+
+
+<script>
+import { Tag } from "vant";
+export default {
+  name: "userInfo",
+  computed: {
+    userId() {
+      return this.$store.getters.getUserId;
+    },
+    userInfo() {
+      return this.$store.getters.getUserInfo;
+    },
+    binded() {
+      return this.$store.getters.getBinded == "true";
+    }
+  }
+};
+</script>
+
+<style scoped>
+#personMessage {
+  /* margin: 2%; */
+  /* width: 100%; */
+  height: 90px;
+  padding: 15px;
+}
+.img {
+  float: left;
+  height: 100%;
+  /* width: 20%;
+  height: 100%; */
+  /* background-size: 100% 100%; */
+}
+.imgright {
+  float: left;
+  margin-top: 2%;
+  margin-left: 6%;
+}
+.line {
+  width: 100%;
+  height: 6px;
+  background: rgb(89, 180, 239);
+}
+#personName {
+  padding-top: 5%;
+  font-weight: bold;
+}
+#binding {
+  margin-top: 37%;
+  font-size: 0.7rem;
+  display: block;
+  border: 1px solid red;
+  border-radius: 5px;
+  line-height: 0.7rem;
+  padding: 3px;
+  color: red;
+  text-align: center;
+  width: 3rem;
+}
+.unbind {
+  margin-top: 37%;
+  font-size: 0.7rem;
+  display: block;
+  border: 1px solid grey;
+  border-radius: 5px;
+  line-height: 0.7rem;
+  padding: 3px;
+  color: grey;
+}
+</style>
+
+

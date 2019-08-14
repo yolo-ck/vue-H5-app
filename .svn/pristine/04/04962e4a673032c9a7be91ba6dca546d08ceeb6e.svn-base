@@ -1,0 +1,110 @@
+<template>
+  <div class="changePage">
+    <mt-header title="租赁地址">
+      <router-link to="/ownerHome/information" slot="left">
+        <mt-button icon="back"></mt-button>
+      </router-link>
+    </mt-header>
+
+    <div class="scroll-list-wrap">
+      <cube-scroll ref="scroll">
+        <address-list ref="addressComp" :data="true" />
+
+        <mt-button class="submit" type="primary" @click="submitAction">提交</mt-button>
+      </cube-scroll>
+    </div>
+  </div>
+</template>
+<script>
+import { HOST } from "../../../data/data.js";
+import AddressList from "@/components/addressList";
+import { MessageBox } from "mint-ui";
+import { Indicator } from "mint-ui";
+import { Dialog } from "vant";
+
+import { Toast } from "vant";
+export default {
+  name: "rentAddress",
+  data() {
+    return {};
+  },
+  computed: {
+    userId() {
+      return this.$store.getters.getUserId;
+    }
+  },
+  activated() {
+    this.$store.commit("setUserType", "ownerAdress");
+  },
+  mounted() {
+    this.$store.commit("setUserType", "ownerAdress");
+  },
+  methods: {
+    submitAction() {
+      var addresses = this.$refs.addressComp.addresses;
+
+      var filtedAddresses = [];
+
+      for (var idx in addresses) {
+        var item = addresses[idx];
+        if (item.room && item.room.length > 0) {
+          filtedAddresses.push(item);
+        }
+      }
+      console.log(filtedAddresses);
+      MessageBox.confirm("确认要提交更改吗?").then(action => {
+        if (action === "confirm") {
+          // this.$router.push({name:""})
+          console.log(filtedAddresses, this.userId);
+          const toast = this.$createToast({
+            txt: "提交商铺...",
+            time: 0,
+            mask: true
+          });
+          toast.show();
+          // debugger;
+          const url = HOST + "/OpenDoor/applicationBinding";
+          this.$http({
+            method: "post",
+            url: url,
+            data: {
+              userId: this.userId,
+              addressData: JSON.stringify(filtedAddresses)
+            }
+          })
+            .then(result => {
+              console.log(result.data);
+              // console.log(1);
+              var code = result.data.code;
+              if (code == 0) {
+                toast.hide();
+                Toast(result.data.message);
+                this.$router.push({ name: "information" });
+              } else {
+                toast.hide();
+                Toast(result.data.message);
+              }
+            })
+            .catch(error => {
+              toast.hide();
+              console.log(error);
+            });
+        }
+      });
+    }
+  },
+  components: {
+    "address-list": AddressList
+  }
+};
+</script>
+<style scoped>
+.scroll-list-wrap {
+  height: 90%;
+}
+.submit {
+  width: 98%;
+  margin-left: 1%;
+}
+</style>
+

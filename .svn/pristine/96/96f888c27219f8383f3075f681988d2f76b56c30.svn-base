@@ -1,0 +1,38 @@
+{
+  "ios": {
+      "debug": {
+          "codeSignIdentity": "iPhone Development",
+          "provisioningProfile": "b68a3485-a4d5-46e3-8f8d-e3df4c78dc08",
+          "developmentTeam": "6AC82EF7K3",
+          "automaticProvisioning": false,
+          "packageType": "development",
+          "buildFlag": [
+            "-UseModernBuildSystem=0",
+            "EMBEDDED_CONTENT_CONTAINS_SWIFT = YES",
+            "ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=NO",
+            "LD_RUNPATH_SEARCH_PATHS = \"@executable_path/Frameworks\""
+          ]
+      },
+      "release": {
+          "codeSignIdentity": "iPhone Distribution",
+          "provisioningProfile": "0d61777c-9d92-4ded-a02e-2a6f6411220f",
+          "developmentTeam": "6AC82EF7K3",
+          "automaticProvisioning": false,
+          "packageType": "enterprise",
+          "buildFlag": [
+            "-UseModernBuildSystem=0",
+            "EMBEDDED_CONTENT_CONTAINS_SWIFT = YES",
+            "ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=NO",
+            "LD_RUNPATH_SEARCH_PATHS = \"@executable_path/Frameworks\""
+          ]
+      }
+  },
+  "android": {
+    "release": {
+      "keystore": "doc/android_keystore/android_key.key",
+      "alias": "ibm",
+      "storePassword": "ik,123",
+      "password": "ik,123"
+    }
+  }
+}

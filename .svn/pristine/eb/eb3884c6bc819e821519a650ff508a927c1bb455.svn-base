@@ -1,0 +1,245 @@
+<template>
+  <div class="page">
+    <mt-header title="人员详情修改">
+      <router-link to="/ownerHome/peopleManage" slot="left">
+        <mt-button icon="back"></mt-button>
+      </router-link>
+    </mt-header>
+
+    <div class="content">
+  <div class="scroll-list-wrap">
+        <cube-scroll
+          ref="scroll"
+        >
+
+    <div class="img">
+      <img :src="hochFormat" width="100%" height="100%" alt>
+    </div>
+    <div class="van-cell van-coupon-cell" v-for="(ele,index) in dataList.userRent" :key="index">
+      <div class="van-cell__title">
+        <span>{{ele.address}}</span>
+      </div>
+      <div style="padding-left:20px;">
+        <!-- <span style="color:rgb(25, 137, 250);">更改</span> -->
+      </div>
+      <!-- <span style="margin-left:20px; color:#1989fa;" @click="remove(index)">删除</span> -->
+    </div>
+
+    <div class="van-cell van-coupon-cell">
+      <div class="van-cell__title">
+        <span>姓名：{{dataList.userName}}</span>
+      </div>
+      <div class="van-cell__title">
+        <span>性别：{{dataList.sex}}</span>
+      </div>
+    </div>
+    <div class="van-cell van-coupon-cell">
+      <div class="van-cell__title">
+        <span>身份证号码：{{dataList.idCard}}</span>
+      </div>
+    </div>
+    <div class="van-cell van-coupon-cell">
+      <div class="van-cell__title">
+        <span>籍贯：{{dataList.censusRegister}}</span>
+      </div>
+      <div class="van-cell__title">
+        <span>民族：{{dataList.national}}</span>
+      </div>
+    </div>
+    <van-cell-group>
+      <van-field v-model="phone" label="联系方式：" type="textarea" placeholder="可修改" rows="1" autosize/>
+
+      <van-field
+        v-model="jobAddress"
+        label="工作单位："
+        type="textarea"
+        placeholder="可修改"
+        rows="1"
+        autosize
+        @click="showPicker"
+      />
+    </van-cell-group>
+
+    <mt-button class="submit" type="primary" @click="submit">提交</mt-button>
+     <div style="height:40px;"></div>
+     </cube-scroll>
+    </div>
+ </div>
+  </div>
+</template>
+<script>
+import { HOST, HOST_SRC ,BASE_PATH} from "../../data/data.js";
+import { MessageBox } from "mint-ui";
+// shops/lgtShops/getShopsByUserId
+export default {
+  name: "messageChange",
+  data() {
+    return {
+      phone: "",
+      job: "",
+      jobAddressArr: [],
+      jobAddress: "",
+      cardType: "",
+      dataList: [],
+      staffuserId: "",
+      address: [],
+      param: "",
+      addressData: [],
+      // shopAddresssId: "",
+      hochFormat: "",
+      //绑定的住址
+      userRent: {}
+    };
+  },
+  computed: {
+    userId() {
+      return this.$store.getters.getUserId;
+    }
+  },
+  mounted() {
+    this.dataList = this.$route.params.personMessage;
+    console.log(this.dataList);
+    this.staffuserId = this.dataList.userId;
+    this.phone = this.dataList.phone;
+    this.jobAddress = this.dataList.workAddress;
+    this.hochFormat = HOST_SRC + this.dataList.hochFormat;
+    this.shopAddresssId = this.dataList.workUnit;
+    console.log(this.userId, this.staffuserId);
+    const url = HOST + "/a/shops/lgtShops/getShopsByUserId";
+    this.$http({
+      method: "post",
+      url: url,
+      data: {
+        userId: this.userId
+      }
+    }).then(data => {
+      this.addressData = data.data.data;
+      for (var i = 0; i < this.addressData.length; i++) {
+        this.jobAddressArr.push({ text: this.addressData[i].name });
+      }
+    });
+  },
+  methods: {
+    //删除地址
+    remove(index) {
+      MessageBox.confirm("", {
+        message: "是否确认删除",
+        title: "提示",
+        confirmButtonText: "确定",
+        cancelButtonText: "取消"
+      })
+        .then(action => {
+          if (action == "confirm") {
+            //确认的回调
+
+            this.dataList.userRent.splice(index, 1);
+
+            //删除当前选中的店铺
+          }
+        })
+        .catch(err => {
+          if (err == "cancel") {
+          }
+        });
+    },
+    showPicker() {
+      if (!this.picker) {
+        this.picker = this.$createPicker({
+          title: "工作单位",
+          data: [this.jobAddressArr],
+          onSelect: this.selectHandle,
+          onCancel: this.cancelHandle
+        });
+      }
+      this.picker.show();
+    },
+    selectHandle(selectedVal, selectedIndex, selectedText) {
+      this.jobAddress = selectedText.join(" ");
+      this.shopAddresssId = this.addressData[selectedIndex].id;
+    },
+    cancelHandle() {},
+    submit() {
+      MessageBox.confirm("", {
+        message: "是否确认修改",
+        title: "提示",
+        confirmButtonText: "确定",
+        cancelButtonText: "取消"
+      }).then(action => {
+        var that = this;
+        if (action == "confirm") {
+          //确认的回调
+
+          // var addresses = that.$refs.addressComp.addresses;
+
+          // var filtedAddresses = [];
+
+          // for (var idx in addresses) {
+          //   var item = addresses[idx];
+          //   if (item.room && item.room.length > 0) {
+          //     filtedAddresses.push(item);
+          //   }
+          // }
+
+          // console.log(filtedAddresses);
+          this.param = {
+            userId: this.staffuserId,
+            shopId: this.shopAddresssId,
+            phone: this.phone
+          };
+
+          const submitUrl =
+            HOST + "/a/mobile/user/register/ownerUpdateEmployee";
+          this.$http({
+            method: "post",
+            url: submitUrl,
+            data: {
+              param: JSON.stringify(this.param)
+            }
+          }).then(data => {
+            this.$router.push({ name: "peopleManage" });
+          });
+        }
+      });
+    }
+  },
+
+  components: {
+    // ownerAddressList
+  }
+};
+</script>
+<style scoped>
+
+.content {
+  position: absolute;
+  top:44px;
+  top:calc(44px + env(safe-area-inset-top));
+  bottom: 0px;
+  width: 100%;
+}
+.scroll-list-wrap {
+  height: 100%;
+}
+
+.img {
+  width: 100%;
+  height: 240px;
+}
+
+.submit {
+  width: 98%;
+  margin-left: 1%;
+}
+</style>
+<style >
+.address .mint-cell-value {
+  display: none !important;
+}
+
+.address .mint-cell {
+  min-height: 24px !important;
+}
+</style>
+
+
+

@@ -1,0 +1,61 @@
+{
+  "_from": "cordova-plugin-webserver@^1.0.3",
+  "_id": "cordova-plugin-webserver@1.0.3",
+  "_inBundle": false,
+  "_integrity": "sha1-GKDXqB73hA6iec+6holJKCQek54=",
+  "_location": "/cordova-plugin-webserver",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "cordova-plugin-webserver@^1.0.3",
+    "name": "cordova-plugin-webserver",
+    "escapedName": "cordova-plugin-webserver",
+    "rawSpec": "^1.0.3",
+    "saveSpec": null,
+    "fetchSpec": "^1.0.3"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "http://registry.npm.taobao.org/cordova-plugin-webserver/download/cordova-plugin-webserver-1.0.3.tgz",
+  "_shasum": "18a0d7a81ef7840ea279cfba86894928241e939e",
+  "_spec": "cordova-plugin-webserver@^1.0.3",
+  "_where": "/Users/Sun/Work/Codes/lgtApp",
+  "author": {
+    "name": "Telerik"
+  },
+  "bugs": {
+    "url": "https://github.com/icenium/cordova-plugin-webserver/issues"
+  },
+  "bundleDependencies": false,
+  "cordova": {
+    "id": "cordova-plugin-webserver",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "deprecated": false,
+  "description": "Cordova WebServer Plugin",
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=3.0.0"
+    }
+  ],
+  "homepage": "https://github.com/icenium/cordova-plugin-webserver#readme",
+  "keywords": [
+    "cordova",
+    "webserver",
+    "ecosystem:cordova",
+    "cordova-ios"
+  ],
+  "license": "MIT",
+  "name": "cordova-plugin-webserver",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/icenium/cordova-plugin-webserver.git"
+  },
+  "version": "1.0.3"
+}

@@ -1,0 +1,1958 @@
+<template>
+  <div class="page">
+    <mt-header title="申请绑定">
+      <router-link to="/home" slot="left">
+        <mt-button icon="back"></mt-button>
+      </router-link>
+    </mt-header>
+
+    <div class="scroll-list-wrap">
+      <cube-scroll ref="scroll" :options="options">
+        <div class="content">
+          <div id="personPhoto">
+            <div class="papers">
+              <div class="papersPhoto" @click="showPickerStyle(1)">
+                <img src="../img/take_pic.png" id="myImage1" alt>
+                <!-- <cube-upload
+                  ref="upload"
+                  v-model="files"
+                  :action="action"
+                  @files-added="addedHandler"
+                  @file-error="errHandler"
+                  @file-success="successerrHandler">
+                  <div class="clear-fix">
+                    <cube-upload-file v-for="(file, i) in files" :file="file" :key="i"></cube-upload-file>
+                    <cube-upload-btn :multiple="false">
+                      <div>
+                        <i class="iconfont creame">&#xe60c;</i>
+                      </div>
+                    </cube-upload-btn>
+                  </div>
+                </cube-upload> -->
+              </div>
+              <div class="desc">上传证件照</div>
+            </div>
+            <div class="people">
+              <div class="peoplePhoto" @click="showPickerStyle(2)">
+                <img src="../img/take_pic.png" id="myImage2" alt>
+                <!-- <cube-upload
+                  ref="upload1"
+                  v-model="files1"
+                  :action="action"
+                  @files-added="addedHandler1"
+                  @file-error="errHandler1"
+                  @file-success="successerrHandler1" >
+                  <div class="clear-fix">
+                    <cube-upload-file v-for="(file, i) in files1" :file="file" :key="i"></cube-upload-file>
+                    <cube-upload-btn :multiple="false">
+                      <div>
+                        <i class="iconfont creame">&#xe60c;</i>
+                      </div>
+                    </cube-upload-btn> -->
+                <!-- </div>
+              </cube-upload> -->
+              </div>
+              <div class="desc">上传人像照</div>
+            </div>
+          </div>
+        </div>
+        <div id="selectRole">
+          <div style="width:120px;    height: 40px;padding-top:5px;">
+            <i class="iconfont">&#xe7b0;</i>选择角色：
+          </div>
+          <div>
+            <cube-select v-model="roleValue" :options="roleOptions" @change="change">></cube-select>
+          </div>
+        </div>
+        <div class="line"></div>
+
+        <div id="owner" v-if="roleValue === '业主'">
+          <div style="width:120px;    height: 40px;padding-top:5px">
+            <i class="iconfont">&#xe7b0;</i>申请地址：
+          </div>
+          <address-list first="true" :data="roleLenght" ref="addressComp"/>
+          <cube-form
+            :immediate-validate="false"
+            :model="ownerModel"
+            :schema="ownerSchema"
+            :options="options"
+            @validate="ownerValidateHandler"
+          ></cube-form>
+
+          <div style="width:100%;    padding-top:5px">
+            <i class="iconfont">&#xe7b0;</i>
+            <span>商铺信息：</span>
+
+            <img
+              class="addShop"
+              width="25px"
+              height="25px"
+              src="../img/add.png"
+              @click="addShop"
+              alt
+            >
+
+            <div style="width:100%;  padding-top:5px">
+              <ul>
+                <li class="shopName" v-for="(ele,index) in sendshopsValue" :key="index">
+                  {{ele.name}}
+                  <span class="del" @click="delShop(index)">删除</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <button class="ownerBtn" @click="submitHandler">提交</button>
+        </div>
+        <div v-else-if="roleValue === '新居民'">
+          <div style="width:120px;    height: 40px;padding-top:5px">
+            <i class="iconfont">&#xe7b0;</i>申请地址：
+          </div>
+          <address-list first="true" :data="roleLenght" ref="addressComp"/>
+          <cube-form
+            :immediate-validate="false"
+            :model="stayModel"
+            :schema="staySchema"
+            :options="options"
+            @validate="stayValidateHandler"
+            @submit="submitHandler"
+          ></cube-form>
+        </div>
+        <div v-else-if="roleValue === '常住用户'">
+          <div style="width:120px;    height: 40px;padding-top:5px">
+            <i class="iconfont">&#xe7b0;</i>申请地址：
+          </div>
+          <address-list first="true" :data="roleLenght" ref="addressComp"/>
+          <cube-form
+            :immediate-validate="false"
+            :model="residentModel"
+            :schema="residentSchema"
+            :options="options"
+            @validate="residentValidateHandler"
+            @submit="submitHandler"
+          ></cube-form>
+        </div>
+      </cube-scroll>
+    </div>
+
+    <div class="shop" v-if="show">
+      <mt-header title="商铺信息">
+        <mt-button slot="left" icon="back" @click="shopback"></mt-button>
+      </mt-header>
+
+      <cube-form
+        :immediate-validate="false"
+        :model="shopModel"
+        :schema="shopSchema"
+        :options="options"
+        @validate="shopValidateHandler"
+      ></cube-form>
+
+
+      <div class="content">
+        <div id="personPhoto">
+
+          <div class="people">
+            <div class="peoplePhoto" @click="showPickerStyle(3)">
+              <img src="../img/take_pic.png" id="myImage3" alt>
+              <!-- <cube-upload
+                ref="upload1"
+                v-model="files1"
+                :action="action"
+                @files-added="addedHandler1"
+                @file-error="errHandler1"
+                @file-success="successerrHandler1" >
+                <div class="clear-fix">
+                  <cube-upload-file v-for="(file, i) in files1" :file="file" :key="i"></cube-upload-file>
+                  <cube-upload-btn :multiple="false">
+                    <div>
+                      <i class="iconfont creame">&#xe60c;</i>
+                    </div>
+                  </cube-upload-btn> -->
+              <!-- </div>
+            </cube-upload> -->
+            </div>
+            <div class="desc"><span style="color:red">*</span>店铺照片</div>
+          </div>
+          <div class="papers">
+            <div class="papersPhoto" @click="showPickerStyle(4)">
+              <img src="../img/take_pic.png" id="myImage4" alt>
+              <!-- <cube-upload
+                ref="upload"
+                v-model="files"
+                :action="action"
+                @files-added="addedHandler"
+                @file-error="errHandler"
+                @file-success="successerrHandler">
+                <div class="clear-fix">
+                  <cube-upload-file v-for="(file, i) in files" :file="file" :key="i"></cube-upload-file>
+                  <cube-upload-btn :multiple="false">
+                    <div>
+                      <i class="iconfont creame">&#xe60c;</i>
+                    </div>
+                  </cube-upload-btn>
+                </div>
+              </cube-upload> -->
+            </div>
+            <div class="desc">经营许可证照片</div>
+          </div>
+        </div>
+      </div>
+
+
+      <div style="width:120px;    height: 40px;padding-top:5px;">
+        <i class="iconfont">&#xe7b0;</i>选择地址
+      </div>
+      <firstAddShop firstAddShop="true" ref="firstAddShop"/>
+      <button class="btn" @click="shopsubmitHandler">确认</button>
+    </div>
+  </div>
+</template>
+
+<script>
+  import {Indicator} from "mint-ui";
+  import {HOST, BASE_PATH} from "../data/data";
+  import AddressList from "@/components/addressList";
+  import firstAddShop from "@/components/firstAddShop";
+
+  import {Toast} from "vant";
+  import {MessageBox} from "mint-ui";
+
+  export default {
+    name: "firstBinding",
+    data() {
+      return {
+        show: false,
+        roleOptions: ["业主", "新居民", "常住用户"],
+        roleLenght: true,
+        keyboardHeight: 271,
+        files: [],
+        files1: [],
+        roleValue: "业主", //角色
+        sendnameValue: "", //姓名
+        papersPhoto: "", //人像照片
+        hochFormat: "", //证件照片
+        sendsexValue: "", //性别
+        sendnationValue: "", //民族
+        sendtypeValue: "", //办证类型
+        sendeducationValue: "", //文化程度
+        sendIdnumber: "", //身份证号
+        sendphoneValue: "", //联系方式
+        sendareaValue: "", //户籍
+        sendjobValue: "", //职业
+        sendjobAddressValue: "", //工作单位
+        sendshopsValue: [], //商铺信息
+        // shopNames: [],
+        nationData: [],
+        sexData: [],
+        typeData: [],
+        educationData: [],
+        residentValidity: {},
+        stayValidity: {},
+        ownerValidity: {},
+        residentValid: undefined,
+        stayValid: undefined,
+        ownerValid: undefined,
+        shopValidity: {},
+        shopValid: undefined,
+        ownerModel: {
+          nameValue: "",
+          Idnumber: "",
+          sexValue: "",
+          nationValue: "",
+          areaValue: "",
+          jobValue: "",
+          phoneValue: "",
+          jobAddressValue: "",
+          typeValue: "",
+          educationValue: "",
+          shopAdress: "",
+          shopNameValue: "",
+
+          shopPic: '',
+          shopIcard: ''
+        },
+        stayModel: {
+          nameValue: "",
+          Idnumber: "",
+          sexValue: "",
+          nationValue: "",
+          areaValue: "",
+          phoneValue: "",
+          educationValue: ""
+        },
+        residentModel: {
+          nameValue: "",
+          Idnumber: "",
+          sexValue: "",
+          nationValue: "",
+          areaValue: "",
+          jobValue: "",
+          phoneValue: "",
+          jobAddressValue: "",
+          typeValue: "",
+          educationValue: "",
+        },
+        shopModel: {
+          shopName: "",
+
+          shopPic: '',
+          shopIcard: ''
+        },
+        //添加商铺用到的变量
+        addshopMessage: {},
+        shopcommunity: "",
+        shopbuilding: "",
+        shoproom: "",
+        shopname: "",
+        shopbusinessScope: "", //经营范围
+        shopshopsPic: "", //商铺照片
+        shopbusinessLicensePic: "", //营业许可证照片
+
+        options: {
+          scrollToInvalidField: true,
+          layout: "standard" // classic fresh
+        }
+      };
+    },
+
+    computed: {
+      userId() {
+        return this.$store.getters.getUserId;
+        console.log(this.userId);
+      },
+      action: function () {
+        return {
+          target: HOST + "/OpenDoor/uploadImage",
+          data: {userId: this.userId}
+        };
+      },
+
+      shopSchema: function () {
+        return {
+          groups: [
+            {
+              fields: [
+                {
+                  type: "input",
+                  modelKey: "shopName",
+                  label: "名称",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {}
+                }
+                // ,
+
+                // {
+                //   type: "upload",
+                //   modelKey: "shopPic",
+                //   label: "店铺照片",
+                //   props: {
+                //     action: {
+                //       target: HOST + "/OpenDoor/uploadImage"
+                //     },
+                //     max: 1
+                //   },
+                //   events: {
+                //     "file-removed": (...args) => {
+                //       console.log("file removed", args);
+                //     }
+                //   },
+                //   rules: {
+                //     required: true
+                //   },
+                //   messages: {
+                //     uploaded: "上传失败"
+                //   }
+                // },
+                // {
+                //   type: "upload",
+                //   modelKey: "shopIcard",
+                //   label: "经营许可证照片",
+                //   props: {
+                //     action: {
+                //       target: HOST + "/OpenDoor/uploadImage"
+                //     },
+                //     max: 1
+                //   },
+                //   events: {
+                //     "file-removed": (...args) => {
+                //       console.log("file removed", args);
+                //     }
+                //   },
+
+                //   messages: {
+                //     uploaded: "上传失败"
+                //   }
+                // }
+              ]
+            }
+          ]
+        };
+      },
+      ownerSchema: function () {
+        return {
+          groups: [
+            {
+              fields: [
+                {
+                  type: "input",
+                  modelKey: "Idnumber",
+                  label: "身份证号",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true,
+                    max: 18,
+                    min: 18
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "input",
+                  modelKey: "nameValue",
+                  label: "姓名",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "select",
+                  modelKey: "sexValue",
+                  label: "性别",
+                  props: {
+                    options: this.sexData
+                  },
+                  events: {
+                    change: (...args) => {
+                      // console.log("change", args);
+                      this.sendsexValue = args[0];
+                    },
+                    "picker-show": () => {
+                      this.hideKeyBoard();
+                    }
+                  },
+                  rules: {
+                    required: true
+                  }
+                },
+                {
+                  type: "select",
+                  modelKey: "nationValue",
+                  label: "民族",
+                  props: {
+                    options: this.nationData
+                  },
+                  events: {
+                    change: (...args) => {
+                      console.log("change", args);
+                      this.sendnationValue = args[0];
+                    },
+                    "picker-show": () => {
+                      this.hideKeyBoard();
+                    }
+                  },
+                  rules: {
+                    required: true
+                  }
+                },
+                {
+                  type: "input",
+                  modelKey: "areaValue",
+                  label: "户籍划区",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "input",
+                  modelKey: "jobValue",
+                  label: "职业",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+
+                {
+                  type: "input",
+                  modelKey: "phoneValue",
+                  label: "联系方式",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "input",
+                  modelKey: "jobAddressValue",
+                  label: "工作单位",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: false
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "select",
+                  modelKey: "typeValue",
+                  label: "办证类型",
+                  props: {
+                    options: this.typeData
+                  },
+                  events: {
+                    change: (...args) => {
+                      // console.log("change", args);
+                      this.sendtypeValue = args[0];
+                    },
+                    "picker-show": () => {
+                      this.hideKeyBoard();
+                    }
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur"
+                },
+                {
+                  type: "select",
+                  modelKey: "educationValue",
+                  label: "文化程度",
+                  props: {
+                    options: this.educationData
+                  },
+                  events: {
+                    change: (...args) => {
+                      // console.log("change", args);
+                      this.sendeducationValue = args[0];
+                    },
+                    "picker-show": () => {
+                      this.hideKeyBoard();
+                    }
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur"
+                }
+              ]
+            }
+          ]
+        };
+      },
+      staySchema: function () {
+        return {
+          groups: [
+            {
+              fields: [
+                {
+                  type: "input",
+                  modelKey: "Idnumber",
+                  label: "身份证号",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true,
+                    max: 18,
+                    min: 18
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "input",
+                  modelKey: "nameValue",
+                  label: "姓名",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "select",
+                  modelKey: "sexValue",
+                  label: "性别",
+                  props: {
+                    options: this.sexData
+                  },
+                  events: {
+                    change: (...args) => {
+                      // console.log("change", args);
+                      this.sendsexValue = args[0];
+                    },
+                    "picker-show": () => {
+                      this.hideKeyBoard();
+                    }
+                  },
+                  rules: {
+                    required: true
+                  }
+                },
+                {
+                  type: "select",
+                  modelKey: "nationValue",
+                  label: "民族",
+                  props: {
+                    options: this.nationData
+                  },
+                  events: {
+                    change: (...args) => {
+                      // console.log("change", args);
+                      this.sendnationValue = args[0];
+                    },
+                    "picker-show": () => {
+                      this.hideKeyBoard();
+                    }
+                  },
+                  rules: {
+                    required: true
+                  }
+                },
+                {
+                  type: "input",
+                  modelKey: "areaValue",
+                  label: "户籍划区",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+
+                {
+                  type: "input",
+                  modelKey: "phoneValue",
+                  label: "联系方式",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "select",
+                  modelKey: "educationValue",
+                  label: "文化程度",
+                  props: {
+                    options: this.educationData
+                  },
+                  events: {
+                    change: (...args) => {
+                      // console.log("change", args);
+                      this.sendeducationValue = args[0];
+                    },
+                    "picker-show": () => {
+                      this.hideKeyBoard();
+                    }
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur"
+                },
+
+                {
+                  type: "submit",
+                  label: "提交"
+                }
+              ]
+            }
+          ]
+        };
+      },
+      residentSchema: function () {
+        return {
+          groups: [
+            {
+              fields: [
+                {
+                  type: "input",
+                  modelKey: "Idnumber",
+                  label: "身份证号",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true,
+                    max: 18,
+                    min: 15
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "input",
+                  modelKey: "nameValue",
+                  label: "姓名",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "select",
+                  modelKey: "sexValue",
+                  label: "性别",
+                  props: {
+                    options: this.sexData
+                  },
+                  events: {
+                    change: (...args) => {
+                      console.log("change", args);
+                      this.sendsexValue = args[0];
+                    },
+                    "picker-show": () => {
+                      this.hideKeyBoard();
+                    }
+                  },
+                  rules: {
+                    required: true
+                  }
+                },
+                {
+                  type: "select",
+                  modelKey: "nationValue",
+                  label: "民族",
+                  props: {
+                    options: this.nationData
+                  },
+                  events: {
+                    change: (...args) => {
+                      // console.log("change", args);
+                      this.sendnationValue = args[0];
+                    },
+                    "picker-show": () => {
+                      this.hideKeyBoard();
+                    }
+                  },
+                  rules: {
+                    required: true
+                  }
+                },
+                {
+                  type: "input",
+                  modelKey: "areaValue",
+                  label: "户籍划区",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "input",
+                  modelKey: "jobValue",
+                  label: "职业",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+
+                {
+                  type: "input",
+                  modelKey: "phoneValue",
+                  label: "联系方式",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "input",
+                  modelKey: "jobAddressValue",
+                  label: "工作单位",
+                  props: {
+                    placeholder: "请输入"
+                  },
+                  rules: {
+                    required: false
+                  },
+                  // validating when blur
+                  trigger: "blur",
+                  events: {
+                    focus: e => {
+                      this.handleInput(e);
+                    }
+                  }
+                },
+                {
+                  type: "select",
+                  modelKey: "typeValue",
+                  label: "办证类型",
+                  props: {
+                    options: this.typeData
+                  },
+                  events: {
+                    change: (...args) => {
+                      // console.log("change", args);
+                      this.sendtypeValue = args[0];
+                    },
+                    "picker-show": () => {
+                      this.hideKeyBoard();
+                    }
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur"
+                },
+                {
+                  type: "select",
+                  modelKey: "educationValue",
+                  label: "文化程度",
+                  props: {
+                    options: this.educationData
+                  },
+                  events: {
+                    change: (...args) => {
+                      // console.log("change", args);
+                      this.sendeducationValue = args[0];
+                    },
+                    "picker-show": () => {
+                      this.hideKeyBoard();
+                    }
+                  },
+                  rules: {
+                    required: true
+                  },
+                  // validating when blur
+                  trigger: "blur"
+                },
+                {
+                  type: "submit",
+                  label: "提交"
+                }
+              ]
+            }
+          ]
+        };
+      }
+    },
+    methods: {
+
+      showPickerStyle(tag) {
+        this.$createActionSheet({
+          title: "上传照片",
+          pickerStyle: true,
+          data: [
+            {
+              content: "拍照上传"
+            },
+            {
+              content: "相册上传"
+            }
+          ],
+          onSelect: (item, index) => {
+            if (item.content == "拍照上传") {
+              console.log("拍照");
+              // this.sourceType = "";
+              this.sourceType = Camera.PictureSourceType.CAMERA;
+              this.takePhoto(tag);
+            } else {
+              console.log("相册");
+              this.sourceType = Camera.PictureSourceType.PHOTOLIBRARY;
+              this.takePhoto(tag);
+            }
+          },
+          onCancel: () => {
+            this.$createToast({
+              txt: `取消上传`,
+              type: "warn",
+              time: 1000
+            }).show();
+          }
+        }).show();
+      },
+      //拍照
+      takePhoto(tag) {
+        var that = this
+        navigator.camera.getPicture(onSuccess, onFail, {
+          quality: 50,
+          // destinationType: Camera.DestinationType.DATA_URL,
+          destinationType: Camera.DestinationType.FILE_URI,
+          sourceType: this.sourceType
+        });
+
+        function onSuccess(imageData) {
+          // var image = document.getElementById("myImage"+tag);
+          // image.src = "data:image/jpeg;base64," + imageData;
+          // image.src = imageData;
+          that.uploadFile(imageData, tag)
+        }
+
+        function onFail(message) {
+          alert("Failed because: " + message);
+        }
+      },
+      uploadFile(fileURL, tag) {
+
+        var that = this;
+
+        var uri = encodeURI(HOST + "/OpenDoor/uploadImage");
+        // tag=1 证件照 tag=2 人脸照
+        if (tag == 1) {
+          uri = encodeURI(HOST + "/mobile/ocr/bce/idcard");
+        } else if (tag == 2) {
+          uri = encodeURI(HOST + "/mobile/ocr/bce/face");
+        } else {
+          uri = encodeURI(HOST + "/OpenDoor/uploadImage");
+        }
+
+        var options = new FileUploadOptions();
+        options.fileKey = "file";
+        // options.fileName = fileURL.substr(fileURL.lastIndexOf('/') + 1);
+        options.fileName = "image.jpg";
+        options.mimeType = "image/jpeg";
+
+        // var headers={'headerParam':'headerValue', 'headerParam2':'headerValue2'};
+
+        // options.headers = headers;
+
+        var params = {};
+        params.userId = this.userId
+
+
+        options.params = params;
+
+        var ft = new FileTransfer();
+        ft.onprogress = function (progressEvent) {
+          if (progressEvent.lengthComputable) {
+            // loadingStatus.setPercentage(progressEvent.loaded / progressEvent.total);
+            //console.log("=====" + progressEvent.loaded / progressEvent.total)
+          } else {
+            // loadingStatus.increment();
+            //console.log("++++++++++++");
+          }
+        };
+
+
+        function win(r) {
+
+          console.log("Code = " + r.responseCode);
+          console.log("Response = " + r.response);
+          console.log("Sent = " + r.bytesSent);
+
+          toast.hide();
+
+          var res = JSON.parse(r.response);
+          var data = res.body.data;
+          var imageUrl = BASE_PATH + data.src + data.name
+          var imageRelativeUrl = data.src + data.name
+
+          console.log(imageUrl)
+
+          var success = res.success
+          if (success) {
+            if (tag == 1) {
+              console.log("证件照");
+              that.papersPhoto = imageRelativeUrl
+              that.setOcrData(res.body.result)
+            } else if (tag == 2) {
+              console.log("人像照");
+              that.hochFormat = imageRelativeUrl
+            } else if (tag == 3) {
+              console.log("店铺照片");
+              that.shopModel.shopPic = imageRelativeUrl
+            }
+            else if (tag == 4) {
+              console.log("经营许可证照片");
+              that.shopModel.shopIcard = imageRelativeUrl
+            }
+            var image = document.getElementById("myImage" + tag);
+            image.src = imageUrl;
+          } else {
+            Toast(res.msg);
+          }
+
+        }
+
+        function fail(error) {
+          alert("An error has occurred: Code = " + error);
+          //console.log("upload error source " + error.source);
+          //console.log("upload error target " + error.target);
+          toast.hide();
+          Toast('上传失败');
+        }
+
+
+        ft.upload(fileURL, uri, win, fail, options);
+
+
+        const toast = this.$createToast({
+          txt: '上传照片中...',
+          time:0,
+          mask: true
+        })
+        toast.show()
+
+      },
+
+      delShop(index) {
+        MessageBox.confirm("", {
+          message: "是否确认删除",
+          title: "提示",
+          confirmButtonText: "确定",
+          cancelButtonText: "取消"
+        })
+          .then(action => {
+            if (action == "confirm") {
+              this.sendshopsValue.splice(index, 1);
+
+              this.$createToast({
+                type: "提示",
+                txt: "删除成功",
+                time: 1000
+              }).show();
+            }
+          })
+          .catch(err => {
+            if (err == "cancel") {
+            }
+          });
+      },
+      change(value, index, text) {
+        if (value == "新居民" || value == "常住用户") {
+          this.roleLenght = false;
+        } else {
+          this.roleLenght = true;
+        }
+      },
+      shopback() {
+        this.show = false;
+        this.$store.commit("setUserType", "firstBinding");
+      },
+      addShop() {
+        this.show = true;
+      },
+      getTop(e) {
+        var offset = e.offsetTop;
+        // debugger;
+        // cube-scroll-wrapper
+        if (
+          e.offsetParent != null &&
+          e.offsetParent.className != "scroll-list-wrap"
+        ) {
+          offset += this.getTop(e.offsetParent);
+        }
+        return offset;
+      },
+
+      handleInput(event) {
+        // debugger;
+        var ele = event.target;
+
+        var top = this.getTop(ele);
+        // alert(top);
+        console.log(top);
+        // debugger;
+        var contentHeight = document.body.clientHeight - this.keyboardHeight;
+
+        //  var contentHeight
+        console.log("top:" + top);
+        console.log("document.body.clientHeight" + document.body.clientHeight);
+        console.log("contentHeight:" + contentHeight);
+        console.log("ele.offsetHeight:" + ele.offsetHeight);
+
+        if (top > contentHeight) {
+          this.scrollTo(contentHeight - top - ele.offsetHeight - 44);
+        }
+      },
+
+      handleTest() {
+        var scroll = this.$refs.scroll;
+        var bscroll = scroll.scroll;
+        // console.log(bscroll.maxScrollY);
+        // console.log(bscroll.y);
+
+        if (bscroll.y < bscroll.maxScrollY) {
+          scroll.scrollTo(0, bscroll.maxScrollY);
+        }
+      },
+
+      scrollTo(posY) {
+        console.log(posY);
+        this.$refs.scroll.scrollTo(0, posY);
+      },
+
+      hideKeyBoard() {
+        if (typeof Keyboard != "undefined") {
+          if (typeof Keyboard.hide == "function") Keyboard.hide();
+        }
+      },
+      //设置OCR身份证识别的数据
+      setOcrData(result) {
+        //民族
+        var nation = result.mz
+        var nationValue = ''
+        for(var i=0;i<this.nationData.length;i++){
+          if(nation+"族"==this.nationData[i].text){
+            nationValue=this.nationData[i].value;
+
+            this.sendnationValue = nationValue;
+            break;
+          }
+        }
+
+        //性别
+        var sex = result.sex
+        var sexValue = ''
+        for(var i=0;i<this.sexData.length;i++){
+          if(sex==this.sexData[i].text){
+            sexValue=this.sexData[i].value;
+            this.sendsexValue = sexValue;
+            break;
+          }
+        }
+        if (this.roleValue == "业主") {
+          this.ownerModel.nameValue = result.name
+          this.ownerModel.Idnumber = result.id
+          this.ownerModel.sexValue = sexValue
+          this.ownerModel.nationValue = nationValue
+          this.ownerModel.areaValue = result.address
+        } else if (this.roleValue == "新居民") {
+          this.stayModel.nameValue = result.name
+          this.stayModel.Idnumber = result.id
+          this.stayModel.sexValue = sexValue
+          this.stayModel.nationValue = nationValue
+          this.stayModel.areaValue = result.address
+        } else if (this.roleValue == "常住用户") {
+          this.residentModel.nameValue = result.name
+          this.residentModel.Idnumber = result.id
+          this.residentModel.sexValue = sexValue
+          this.residentModel.nationValue = nationValue
+          this.residentModel.areaValue = result.address
+        }
+      },
+      submitHandler(e) {
+        e.preventDefault();
+        console.log("submit", e);
+
+        var addresses = this.$refs.addressComp.addresses;
+
+        var filtedAddresses = [];
+
+        for (var idx in addresses) {
+          var item = addresses[idx];
+          if (item.room && item.room.length > 0) {
+            filtedAddresses.push(item);
+          }
+        }
+
+        if (!(this.papersPhoto.length > 0)) {
+          Toast("请选择证件照片");
+          return;
+        }
+
+        if (!(this.hochFormat.length > 0)) {
+          Toast("请选择人像照照片");
+          return;
+        }
+        if (!(filtedAddresses.length > 0)) {
+          Toast("请选择绑定地址");
+          return;
+        }
+
+        //  this.ownerModel.phoneValue;
+        //  this.stayModel.phoneValue;
+        //  this.residentModel.phoneValue;
+        // var reg = 11 && /^((13|14|15|17|18)[0-9]{1}\d{8})$/; //手机号正则验证
+        // this.sendphoneValue;
+
+        var that = this;
+
+        var reg = /^((13[0-9])|(14[5,7,9])|(15([0-3]|[5-9]))|(166)|(17[0,1,3,5,6,7,8])|(18[0-9])|(19[8|9]))\d{8}$/; //手机号正则验证
+        var regIdCard = /(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}[0-9Xx]$)/;
+
+        //判断是什么角色然后赋值给发送后台的变量
+        if (this.roleValue == "业主") {
+          if (!(this.sendshopsValue.length > 0)) {
+            Toast("请填写商铺信息");
+            return;
+          }
+          if (this.ownerModel.phoneValue == "") {
+            Toast("手机号码不能为空，请重新输入");
+            return;
+          }
+
+          if (!(regIdCard.test(this.ownerModel.Idnumber))) {
+            Toast("身份证号码有误，请重新输入");
+            return;
+          }
+          if (!(reg.test(this.ownerModel.phoneValue))) {
+            Toast("手机号码有误，请重新输入");
+            return;
+          }
+
+
+          this.sendnameValue = this.ownerModel.nameValue;
+          this.sendIdnumber = this.ownerModel.Idnumber;
+          this.sendareaValue = this.ownerModel.areaValue;
+          this.sendjobValue = this.ownerModel.jobValue;
+          this.sendjobAddressValue = this.ownerModel.jobAddressValue;
+          this.sendphoneValue = this.ownerModel.phoneValue;
+          this.roleValue = 0;
+          this.sendeducationValue = this.ownerModel.educationValue
+        }
+        if (this.roleValue == "新居民") {
+          if (this.stayModel.phoneValue == "") {
+            Toast("手机号码不能为空，请重新输入");
+            return;
+          }
+          if (!(regIdCard.test( this.stayModel.Idnumber))) {
+            Toast("身份证号码有误，请重新输入");
+            return;
+          }
+
+          if (!(reg.test(this.stayModel.phoneValue))) {
+            Toast("手机号码有误，请重新输入");
+            return;
+          }
+
+          this.sendnameValue = this.stayModel.nameValue;
+          this.sendIdnumber = this.stayModel.Idnumber;
+          this.sendareaValue = this.stayModel.areaValue;
+          this.sendphoneValue = this.stayModel.phoneValue;
+          this.roleValue = 1;
+          this.sendeducationValue = this.stayModel.educationValue
+        }
+
+        if (this.roleValue == "常住用户") {
+          if (this.residentModel.phoneValue == "") {
+            Toast("手机号码不能为空，请重新输入");
+            return;
+          }
+          if (!(regIdCard.test(this.residentModel.Idnumber))) {
+            Toast("身份证号码有误，请重新输入");
+            return;
+          }
+
+          if (!(reg.test(this.residentModel.phoneValue))) {
+            Toast("手机号码有误，请重新输入");
+            return;
+          }
+
+          this.sendnameValue = this.residentModel.nameValue;
+          this.sendIdnumber = this.residentModel.Idnumber;
+          this.sendareaValue = this.residentModel.areaValue;
+          this.sendjobValue = this.residentModel.jobValue;
+          this.sendjobAddressValue = this.residentModel.jobAddressValue;
+          this.sendphoneValue = this.residentModel.phoneValue;
+          this.roleValue = 2;
+          this.sendeducationValue = this.residentModel.educationValue
+        }
+
+
+
+        this.$http({
+          method: "post",
+          url: HOST + "/a/mobile/user/register/binDing",
+          data: {
+            userId: that.userId,
+            userType: that.roleValue, //角色
+            userName: that.sendnameValue, //姓名
+            sex: that.sendsexValue, //性别
+            idCard: that.sendIdnumber, //身份证号
+            national: that.sendnationValue, //民族
+            censusRegister: that.sendareaValue, //户籍
+            professional: that.sendjobValue, //职业
+            workUnit: that.sendjobAddressValue, //工作单位
+            papersType: that.sendtypeValue, //办证类型
+            addresses: JSON.stringify(filtedAddresses), //绑定地址
+            papersPhoto: that.papersPhoto, //证件照
+            hochFormat: that.hochFormat, //人像照
+            phone: that.sendphoneValue, //联系方式
+            education: that.sendeducationValue,//文化程度
+            shops: JSON.stringify(that.sendshopsValue) //商店
+          }
+        }).then(() => {
+          this.$store.commit("setBinded", true);
+          this.$destroy();
+          if (this.roleValue == 0) {
+            MessageBox.alert("业主提交完信息需重新登录").then(action => {
+              this.$router.push({name: "login"});
+            });
+          } else {
+            this.$router.push({name: "home"});
+          }
+        });
+      },
+
+      shopsubmitHandler() {
+        var addresses = this.$refs.firstAddShop.shopAddress;
+
+        var shopAddresses = [];
+
+        for (var idx in addresses) {
+          var item = addresses[idx];
+          if (item.room && item.room.length > 0) {
+            shopAddresses.push(item);
+          }
+        }
+
+        if (this.shopModel.shopName == "") {
+          Toast("请输入店铺名称");
+          return;
+        }
+
+        if (!(this.shopModel.shopPic.length > 0)) {
+          Toast("请上传店铺图片");
+          return;
+        }
+
+        if (!(shopAddresses.length > 0)) {
+          Toast("请选择绑定地址");
+          return;
+        }
+
+        this.$store.commit("setUserType", "firstBinding");
+
+        var pic;
+        if (this.shopModel.shopIcard.length == 0) {
+          pic = "";
+        } else {
+          pic = this.shopModel.shopIcard;
+        }
+        var shopProject = {
+          community: shopAddresses[0].community,
+          building: shopAddresses[0].building,
+          room: shopAddresses[0].room,
+          name: this.shopModel.shopName,
+          shopsPic: this.shopModel.shopPic,
+          businessLicensePic: pic
+        };
+        console.log(shopProject);
+
+        this.sendshopsValue.push(shopProject);
+        this.shopModel.shopName = "";
+        this.shopModel.shopPic = '';
+        (this.shopModel.shopIcard = ''),
+          console.log(this.sendshopsValue);
+
+        this.show = false;
+      },
+      residentValidateHandler(result) {
+        this.residentValidity = result.validity;
+        this.residentValid = result.valid;
+      },
+      stayValidateHandler(result) {
+        this.stayValidity = result.validity;
+        this.stayValid = result.valid;
+      },
+      ownerValidateHandler(result) {
+        this.ownerValidity = result.validity;
+        this.ownerValid = result.valid;
+      },
+      shopValidateHandler(result) {
+        this.stayValidity = result.validity;
+        this.stayValid = result.valid;
+      },
+      successerrHandler() {
+        console.log(
+          this.files[0].response.body.data.src +
+          this.files[0].response.body.data.name
+        );
+        this.papersPhoto =
+          this.files[0].response.body.data.src +
+          this.files[0].response.body.data.name;
+      },
+      successerrHandler1() {
+        console.log(
+          this.files1[0].response.body.data.src +
+          this.files1[0].response.body.data.name
+        );
+        this.hochFormat =
+          this.files1[0].response.body.data.src +
+          this.files1[0].response.body.data.name;
+      },
+      addedHandler() {
+        const file = this.files[0];
+        file && this.$refs.upload.removeFile(file);
+      },
+      addedHandler1() {
+        const file1 = this.files1[0];
+        file1 && this.$refs.upload1.removeFile(file1);
+      },
+
+      errHandler(file) {
+        // const msg = file.response.message
+        this.$createToast({
+          type: "warn",
+          txt: "上传失败",
+          time: 1000
+        }).show();
+      },
+      errHandler1(file1) {
+        // const msg = file.response.message
+        this.$createToast({
+          type: "warn",
+          txt: "上传失败",
+          time: 1000
+        }).show();
+      },
+
+      getDict() {
+        this.$http
+          .get(HOST + "/a/mobile/user/register/getDict")
+          .then(response => {
+            console.log(response.data.data);
+            var nationData1 = response.data.data.nation;
+            for (var i = 0; i < nationData1.length; i++) {
+              this.nationData.push({
+                text: nationData1[i].label,
+                value: nationData1[i].value
+              });
+            }
+            var sexData1 = response.data.data.sex;
+            for (var j = 0; j < sexData1.length; j++) {
+              this.sexData.push({
+                text: sexData1[j].label,
+                value: sexData1[j].value
+              });
+            }
+            var typeData1 = response.data.data.cardType;
+            for (var k = 0; k < typeData1.length; k++) {
+              this.typeData.push({
+                text: typeData1[k].label,
+                value: typeData1[k].value
+              });
+            }
+            var educationData1 = response.data.data.degree_education;
+            for (var i = 0; i < educationData1.length; i++) {
+              this.educationData.push({
+                text: educationData1[i].label,
+                value: educationData1[i].value
+              });
+            }
+          });
+      }
+    },
+    // activated() {
+    //   if (this.$route.params.shopData) {
+    //     this.show = true;
+
+    //   } else {
+    //     this.$route.params.data;
+    //     console.log(212)
+    //   }
+    // },
+    created: function () {
+      this.getDict();
+    },
+    updated() {
+    },
+    activated() {
+      this.$store.commit("setUserType", "firstBinding");
+    },
+    mounted() {
+      this.$store.commit("setUserType", "firstBinding");
+
+      // this.sendshopsValue.push(this.$route.params.shopMessage);
+
+      // if (this.$route.params.shopMessage) {
+      //   for (var i = 0; i < this.sendshopsValue.length; i++) {
+      //     this.shopNames.push(this.sendshopsValue[i].name);
+      //   }
+      // }
+
+      this.keyboardWillShowEvent = event => {
+        console.log("FirstBindPage");
+        console.log(event.keyboardHeight);
+        this.keyboardHeight = event.keyboardHeight;
+        // that.keyboardHeight = event.keyboardHeight;
+        // var marginTop =  - event.keyboardHeight + "px";
+        // this.styleObject.marginTop = marginTop;
+      };
+
+      // this.keyboardWillHideEvent = (event) =>{
+      //   this.styleObject.marginTop = '0px';
+      // };
+      window.addEventListener("keyboardWillShow", this.keyboardWillShowEvent);
+      //  window.addEventListener('keyboardWillHide', this.keyboardWillHideEvent)
+    },
+    destroyed() {
+      window.removeEventListener("keyboardWillShow", this.keyboardWillShowEvent);
+      // window.removeEventListener("keyboardWillHide",this.keyboardWillHideEvent)
+    },
+    components: {
+      "address-list": AddressList,
+      firstAddShop: firstAddShop
+    }
+  };
+</script>
+
+
+<style scoped>
+  .del {
+    float: right;
+    padding-right: 67px;
+    color: #26a2ff;
+  }
+
+  .shopback {
+    position: absolute;
+    top: 15px;
+    left: 12px;
+    color: white;
+    font-size: 15px;
+  }
+
+  .btn {
+    margin: 0 auto;
+    display: block;
+    margin-top: 10px;
+    padding: 17px 16px;
+    width: 95%;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    color: #fff;
+    background: #4a4c5b;
+    outline: none;
+    border: none;
+    border-radius: 2px;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .shop {
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    margin: 0;
+    padding: 0;
+    background-color: white;
+    z-index: 2;
+    /* display: none; */
+  }
+
+  .ownerBtn {
+    margin: 0 auto;
+    display: block;
+    margin-top: 10px;
+    padding: 17px 16px;
+    width: 95%;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    color: #fff;
+    background: #4a4c5b;
+    outline: none;
+    border: none;
+    border-radius: 2px;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .addShop {
+    float: right;
+    padding-right: 25px;
+    padding-top: 5px;
+  }
+
+  .cube-select {
+    min-height: 46px;
+    border-radius: 0px;
+    padding: 12px 20px 10px 10px;
+  }
+
+  #selectRole {
+    width: 100%;
+    height: 90px;
+  }
+
+  .scroll-list-wrap {
+    height: calc(100% - 88px);
+    /* padding-top:40px; */
+  }
+
+  #firstBinding {
+    height: 100%;
+  }
+
+  .iconfont {
+    font-family: "iconfont" !important;
+    font-size: 20px;
+    color: red;
+    font-style: normal;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #personPhoto {
+    width: 100%;
+    height: 10rem;
+    background: rgb(238, 238, 238);
+  }
+
+  .line {
+    width: 100%;
+    height: 0.3rem;
+    background: rgb(89, 180, 239);
+  }
+
+  .mint-cell {
+    width: 94%;
+    float: right;
+    height: 22px;
+    min-height: 30px;
+  }
+
+  .mint-cell-wrapper {
+    padding: 0 0 !important;
+  }
+
+  .mint-field .mint-cell-title {
+    width: 94px !important;
+  }
+
+  #menu {
+    margin-top: 1%;
+  }
+
+  .btn1 {
+    display: block;
+    margin-top: 20%;
+    width: 53%;
+    border-radius: 20px;
+    margin: 31px auto;
+  }
+
+  .papers,
+  .people {
+    width: 31%;
+    height: 82%;
+    float: left;
+    border: 1px solid;
+    border-radius: 18px;
+    text-align: center;
+    color: white;
+    font-size: 12px;
+  }
+
+  .papersPhoto,
+  .peoplePhoto {
+    width: 100%;
+    height: 74%;
+    /* border: 1px solid red; */
+    margin-top: 13%;
+    background: white;
+  }
+
+  .papers .desc {
+    padding-top: 5px;
+  }
+
+  .people .desc {
+    padding-top: 5px;
+  }
+
+  .papers {
+    margin-left: 15%;
+    margin-top: 3%;
+    background: rgb(220, 112, 76);
+  }
+
+  .people {
+    background: rgb(71, 158, 227);
+    margin-left: 6%;
+    margin-top: 3%;
+  }
+
+  .cube-upload {
+    position: relative;
+    bottom: 0;
+    /* border: 2px solid; */
+    color: black;
+    height: 100%;
+    text-align: center;
+    line-height: 100%;
+  }
+
+  .clear-fix {
+    height: 100%;
+  }
+
+  .cube-upload-file {
+    height: 100%;
+  }
+
+  .cube-upload-btn {
+    height: 100%;
+  }
+
+  .cube-upload-file-def {
+    width: 100%;
+    height: 100%;
+  }
+
+  .creame {
+    color: rgb(218, 218, 218);
+    position: absolute;
+    top: 12%;
+    left: 27%;
+    font-size: 32px;
+  }
+
+  .add {
+    float: right;
+    line-height: 1;
+    font-size: 23px;
+    margin-right: 13%;
+    margin-left: 3%;
+  }
+
+  .minus {
+    float: right;
+    line-height: 1;
+    font-size: 23px;
+    margin-right: 14%;
+    margin-left: 4%;
+  }
+
+  .shopName {
+    padding-left: 30px;
+    margin-top: 5px;
+  }
+
+  #myImage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+  }
+
+  #myImage1 {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+  }
+
+  #myImage2 {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+  }
+
+  #myImage3 {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+  }
+
+  #myImage4 {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+  }
+</style>
+
+<style>
+  .cube-upload-file-def {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .cube-upload .cube-upload-file {
+    height: 100% !important;
+  }
+</style>
+<style lang="stylus">
+
+  .shop .mint-cell-value {
+    display: none;
+  }
+
+  .content .cube-upload {
+    .cube-upload-file, .cube-upload-btn {
+      margin: 0;
+      height: 115px;
+    }
+
+    .cube-upload-file {
+      margin: 0;
+
+      + .cube-upload-btn {
+        margin-top: -115px;
+        opacity: 0;
+      }
+    }
+
+    .cube-upload-file-def {
+      width: 100%;
+      height: 100%;
+
+      .cubeic-wrong {
+        display: none;
+      }
+    }
+
+    .cube-upload-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      > div {
+        text-align: center;
+      }
+
+      i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        margin-bottom: 20px;
+        font-size: 32px;
+        line-height: 1;
+        font-style: normal;
+        color: #fff;
+        background-color: #333;
+        border-radius: 50%;
+      }
+    }
+  }
+</style>

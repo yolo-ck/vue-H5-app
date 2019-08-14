@@ -1,0 +1,1641 @@
+<template>
+  <div class="page">
+    <mt-header title="添加人员">
+      <mt-button icon="back" slot="left" @click="back"></mt-button>
+      <router-link to="/ownerHome/teachPage" slot="right">
+        <mt-button>
+          帮助
+          <img :src="question" alt class="question-mark" />
+        </mt-button>
+      </router-link>
+    </mt-header>
+    <div class="scroll-list-wrap">
+      <cube-scroll ref="scroll">
+        <div class="content">
+          <div id="personPhoto">
+            <div class="papers">
+              <div class="papersPhoto" @click="showPickerStyle(1)">
+                <img :src="myImage1Src" id="myImage1" alt />
+                <!--  -->
+                <!-- <cube-upload
+                  ref="upload"
+                  v-model="files"
+                  :action="action"
+                  @files-added="addedHandler"
+                  @file-error="errHandler"
+                  @file-success="successerrHandler"
+                >
+                  <div class="clear-fix">
+                    <cube-upload-file v-for="(file, i) in files" :file="file" :key="i"></cube-upload-file>
+                    <cube-upload-btn :multiple="false">
+                      <div>
+                        <i class="iconfont creame">&#xe60c;</i>
+                      </div>
+                    </cube-upload-btn>
+                  </div>
+                </cube-upload>-->
+                <!--                <i class="iconfont creame">&#xe60c;</i>-->
+              </div>
+              <div class="desc">上传证件照</div>
+            </div>
+            <div class="people">
+              <div class="peoplePhoto" @click="showPickerStyle(2)">
+                <img :src="myImage2Src" id="myImage2" alt />
+                <!-- <cube-upload
+                  ref="upload1"
+                  v-model="files1"
+                  :action="action"
+                  @files-added="addedHandler1"
+                  @file-error="errHandler1"
+                  @file-success="successerrHandler1"
+                >
+                  <div class="clear-fix">
+                    <cube-upload-file v-for="(file, i) in files1" :file="file" :key="i"></cube-upload-file>
+                    <cube-upload-btn :multiple="false">
+                      <div>
+
+                      </div>
+                    </cube-upload-btn>
+                  </div>
+                </cube-upload>-->
+                <!--                <i class="iconfont creame">&#xe60c;</i>-->
+              </div>
+              <div class="desc">上传人像照</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="line"></div>
+
+        <div style="width:120px;    height: 40px;padding-top:5px">
+          <i class="iconfont">&#xe7b0;</i>申请地址：
+        </div>
+        <address-list :first="falg" ref="addressComp" :data="resubmitAddress" />
+        <cube-form
+          :immediate-validate="false"
+          :model="addModel"
+          :schema="addSchema"
+          :options="options"
+          @validate="addValidateHandler"
+        ></cube-form>
+
+        <button class="addBtn" @click="submitHandler">提交</button>
+      </cube-scroll>
+    </div>
+  </div>
+</template>
+
+<script>
+import { BASE_PATH, HOST } from "../../data/data";
+import addPersonAddress from "@/components/addPersonAddress";
+import { Toast } from "vant";
+
+export default {
+  name: "addPerson",
+  data() {
+    return {
+      question: require("../../icon/question.png"),
+      keyboardHeight: 271,
+      files: [],
+      files1: [],
+      papersPhoto: "", //人像照片
+      hochFormat: "", //证件照片
+
+      nationData: [], //民族
+      sexData: [], //性别
+      typeData: [], //办证
+      insuranceData: [{ text: "是", value: "1" }, { text: "否", value: "0" }], //保险
+      cultureData: [], //文化程度
+      politicsStatusData: [], //政治面貌
+      occupationData: [], //从事职业
+      marryData: [], //婚姻状况
+      homeTpyeData: [], //住所类别
+      liveForData: [], //居住事由
+      policeData: [], //派出所
+      communitiesData: [], //居委会
+      skillLevelData: [], //职业技术等级
+      workUnitData: [],
+      residentValidity: {},
+      addValidity: {},
+      //
+      sendsexValue: "", //性别
+      sendnationValue: "", //民族
+      sendpoliticsStatus: "", //政治面貌
+      sendculture: "", //文化程度
+      sendmarry: "", //婚姻
+      sendoccupation: "", //从事职业
+      sendhomeTpye: "", //住所类别
+      sendtypeValue: "", //办证类型
+      sendliveFor: "", //居住事由
+      sendpolice: "", //派出所
+      sendskillLevel: "", //技术等级
+      sendoldInsurance: "", //养老保险
+      sendloseInsurance: "", //失业保险
+      sendbirthInsurance: "", //生育保险
+      sendhurtInsurance: "", //工伤保险
+      sendworkUnit: "", //工作单位
+
+      addValid: undefined,
+      shopValid: undefined,
+      addModel: {
+        nameValue: "", //姓名
+        Idnumber: "", //身份证号
+        sexValue: "", //性别
+        nationValue: "", //民族
+        areaValue: "", //户籍划区
+
+        phoneValue: "", //联系方式
+        politicsStatus: "", //政治面貌
+        culture: "", //文化程度
+        marry: "", //婚姻状况
+        occupation: "", //从事职业
+        workUnit: "", //工作单位
+        homeTpye: "", //住所类别
+        typeValue: "", //办证类型
+        liveFor: "", //居住事由
+        police: "", //派出所
+        communities: "", //居委会
+        oldInsurance: "", //养老保险
+        loseInsurance: "", //失业保险
+        birthInsurance: "", //生育保险
+        hurtInsurance: "", //工伤保险
+        skillLevel: "" //技术等级
+      },
+
+      options: {
+        // scrollToInvalidField: true,
+        // layout: "standard" // classic fresh
+      },
+      filtedAddresses: [],
+      addresses: [],
+      buildingList: "",
+      sourceType: "",
+      //图片路径
+      imgurl: [],
+      isResubmit: false,
+      falg: true,
+      resubmitAddress: "",
+      myImage1Src:require("../../img/take_pic.png"),
+      myImage2Src:require("../../img/take_pic.png"),
+      resubmitUserId:"",
+      addressStatus:"",
+    };
+  },
+
+  watch: {
+    addresses: {
+      deep: true,
+      handler() {
+        // console.log(this.addresses);
+     
+
+           this.$http({
+      method: "post",
+      url: HOST + "/OpenDoor/getBindingAddress",
+
+      data: {
+        userId: this.userId
+      }
+    }).then(data => {
+     
+      this.buildingList = data.data.data;
+         this.filtedAddresses = [];
+       
+        for (let i = 0; i < this.addresses.length; i++) {
+          if (this.addresses[i].name != "请选择地址") {
+            this.filtedAddresses.push(
+              this.buildingList[this.addresses[i].value]
+            );
+          }
+        }
+
+        if (this.filtedAddresses.length > 0) {
+
+          this.getPoliceStaticByAddress(this.filtedAddresses[0].community);
+        }
+
+    });
+      }
+    }
+  },
+  computed: {
+    userId() {
+      return this.$store.getters.getUserId;
+    },
+    action: function() {
+      return {
+        target: HOST + "/OpenDoor/uploadImage",
+        data: { userId: this.userId }
+      };
+    },
+
+    addSchema: function() {
+      return {
+        groups: [
+          {
+            fields: [
+              {
+                type: "input",
+                modelKey: "Idnumber",
+                label: "身份证号",
+                props: {
+                  placeholder: "请输入"
+                },
+                rules: {
+                  required: true,
+                  max: 18,
+                  min: 18
+                },
+                // validating when blur
+                trigger: "blur",
+                events: {
+                  focus: e => {
+                    this.handleInput(e);
+                  }
+                }
+              },
+              {
+                type: "input",
+                modelKey: "nameValue",
+                label: "姓名",
+                props: {
+                  placeholder: "请输入"
+                },
+                rules: {
+                  required: true
+                },
+                // validating when blur
+                trigger: "blur",
+                events: {
+                  focus: e => {
+                    this.handleInput(e);
+                  }
+                }
+              },
+              {
+                type: "select",
+                modelKey: "sexValue",
+                label: "性别",
+                props: {
+                  options: this.sexData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendsexValue = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+                rules: {
+                  required: true
+                }
+              },
+              {
+                type: "select",
+                modelKey: "nationValue",
+                label: "民族",
+                props: {
+                  options: this.nationData
+                },
+                events: {
+                  change: (...args) => {
+                    console.log("change", args);
+                    this.sendnationValue = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+                rules: {
+                  required: true
+                }
+              },
+              {
+                type: "input",
+                modelKey: "areaValue",
+                label: "户籍划区",
+                props: {
+                  placeholder: "请输入"
+                },
+                rules: {
+                  required: true
+                },
+                // validating when blur
+                trigger: "blur",
+                events: {
+                  focus: e => {
+                    this.handleInput(e);
+                  }
+                }
+              },
+
+              {
+                type: "input",
+                modelKey: "phoneValue",
+                label: "联系方式",
+                props: {
+                  placeholder: "请输入"
+                },
+                rules: {
+                  required: true
+                },
+                // validating when blur
+                trigger: "blur",
+                events: {
+                  focus: e => {
+                    this.handleInput(e);
+                  }
+                }
+              },
+              {
+                type: "select",
+                modelKey: "politicsStatus",
+                label: "政治面貌",
+                props: {
+                  options: this.politicsStatusData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendpoliticsStatus = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+                rules: {
+                  required: true
+                },
+                // validating when blur
+                trigger: "blur"
+              },
+              {
+                type: "select",
+                modelKey: "culture",
+                label: "文化程度",
+                props: {
+                  options: this.cultureData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendculture = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+                rules: {
+                  required: true
+                },
+                // validating when blur
+                trigger: "blur"
+              },
+              {
+                type: "select",
+                modelKey: "marry",
+                label: "婚姻状况",
+                props: {
+                  options: this.marryData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendmarry = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+                rules: {
+                  required: true
+                },
+                // validating when blur
+                trigger: "blur"
+              },
+              {
+                type: "select",
+                modelKey: "occupation",
+                label: "从事职业",
+                props: {
+                  options: this.occupationData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendoccupation = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+                rules: {
+                  required: true
+                },
+                // validating when blur
+                trigger: "blur"
+              },
+              {
+                type: "select",
+                modelKey: "workUnit",
+                label: "工作单位",
+                props: {
+                  options: this.workUnitData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendworkUnit = args[0];
+                    console.log(this.sendworkUnit);
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+                rules: {
+                  required: true
+                },
+                // validating when blur
+                trigger: "blur"
+              },
+              {
+                type: "select",
+                modelKey: "homeTpye",
+                label: "住所类别",
+                props: {
+                  options: this.homeTpyeData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendhomeTpye = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+                rules: {
+                  required: true
+                },
+                // validating when blur
+                trigger: "blur"
+              },
+              {
+                type: "select",
+                modelKey: "typeValue",
+                label: "办证类型",
+                props: {
+                  options: this.typeData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendtypeValue = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+                rules: {
+                  required: true
+                },
+                // validating when blur
+                trigger: "blur"
+              },
+              {
+                type: "select",
+                modelKey: "liveFor",
+                label: "居住事由",
+                props: {
+                  options: this.liveForData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendliveFor = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+                rules: {
+                  required: true
+                },
+                // validating when blur
+                trigger: "blur"
+              },
+              {
+                type: "select",
+                modelKey: "police",
+                label: "派出所",
+                props: {
+                  options: this.policeData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendpolice = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+                rules: {
+                  required: true
+                },
+                // validating when blur
+                trigger: "blur"
+              },
+
+              {
+                type: "select",
+                modelKey: "oldInsurance",
+                label: "养老保险",
+                props: {
+                  options: this.insuranceData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendoldInsurance = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+
+                // validating when blur
+                trigger: "blur"
+              },
+              {
+                type: "select",
+                modelKey: "loseInsurance",
+                label: "失业保险",
+                props: {
+                  options: this.insuranceData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendloseInsurance = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+
+                // validating when blur
+                trigger: "blur"
+              },
+              {
+                type: "select",
+                modelKey: "birthInsurance",
+                label: "生育保险",
+                props: {
+                  options: this.insuranceData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.sendbirthInsurance = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+
+                // validating when blur
+                trigger: "blur"
+              },
+              {
+                type: "select",
+                modelKey: "hurtInsurance",
+                label: "工伤保险",
+                props: {
+                  options: this.insuranceData
+                },
+                events: {
+                  change: (...args) => {
+                    this.sendinsuranceData = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+
+                // validating when blur
+                trigger: "blur"
+              },
+              {
+                type: "select",
+                modelKey: "skillLevel",
+                label: "职业技术等级",
+                props: {
+                  options: this.skillLevelData
+                },
+                events: {
+                  change: (...args) => {
+                    // console.log("change", args);
+                    this.skillLevelValue = args[0];
+                  },
+                  "picker-show": () => {
+                    this.hideKeyBoard();
+                  }
+                },
+
+                // validating when blur
+                trigger: "blur"
+              }
+            ]
+          }
+        ]
+      };
+    }
+  },
+  methods: {
+    back() {
+      if (this.isResubmit) {
+        this.$router.push({ name: "peopleManage" });
+      } else {
+        this.$router.back();
+      }
+    },
+    showPickerStyle(tag) {
+      this.$createActionSheet({
+        title: "上传照片",
+        pickerStyle: true,
+        data: [
+          {
+            content: "拍照上传"
+          },
+          {
+            content: "相册上传"
+          }
+        ],
+        onSelect: (item, index) => {
+          if (item.content == "拍照上传") {
+            console.log("拍照");
+            // this.sourceType = "";
+            this.sourceType = Camera.PictureSourceType.CAMERA;
+            this.takePhoto(tag);
+          } else {
+            console.log("相册");
+            this.sourceType = Camera.PictureSourceType.PHOTOLIBRARY;
+            this.takePhoto(tag);
+          }
+        },
+        onCancel: () => {
+          this.$createToast({
+            txt: `取消上传`,
+            type: "warn",
+            time: 1000
+          }).show();
+        }
+      }).show();
+    },
+    //拍照
+    takePhoto(tag) {
+      var that = this;
+      navigator.camera.getPicture(onSuccess, onFail, {
+        quality: 50,
+        targetWidth: 500,
+        targetHeight: 500,
+        // destinationType: Camera.DestinationType.DATA_URL,
+        destinationType: Camera.DestinationType.FILE_URI,
+        sourceType: this.sourceType
+      });
+
+      function onSuccess(imageData) {
+        // var image = document.getElementById("myImage"+tag);
+        // image.src = "data:image/jpeg;base64," + imageData;
+        // image.src = imageData;
+        that.uploadFile(imageData, tag);
+      }
+
+      function onFail(message) {
+        alert("Failed because: " + message);
+      }
+    },
+    uploadFile(fileURL, tag) {
+      var that = this;
+
+      var uri = encodeURI(HOST + "/OpenDoor/uploadImage");
+      // tag=1 证件照 tag=2 人脸照
+      if (tag == 1) {
+        uri = encodeURI(HOST + "/mobile/ocr/bce/idcard");
+      } else if (tag == 2) {
+        uri = encodeURI(HOST + "/mobile/ocr/bce/face");
+      } else {
+        uri = encodeURI(HOST + "/OpenDoor/uploadImage");
+      }
+
+      var options = new FileUploadOptions();
+      options.fileKey = "file";
+      // options.fileName = fileURL.substr(fileURL.lastIndexOf('/') + 1);
+      options.fileName = "image.jpg";
+      options.mimeType = "image/jpeg";
+
+      // var headers={'headerParam':'headerValue', 'headerParam2':'headerValue2'};
+
+      // options.headers = headers;
+
+      var params = {};
+      params.userId = this.userId;
+
+      options.params = params;
+
+      var ft = new FileTransfer();
+      ft.onprogress = function(progressEvent) {
+        console.log(progressEvent);
+        if (progressEvent.lengthComputable) {
+          // loadingStatus.setPercentage(progressEvent.loaded / progressEvent.total);
+          //console.log("=====" + progressEvent.loaded / progressEvent.total)
+        } else {
+          // loadingStatus.increment();
+          //console.log("++++++++++++");
+        }
+      };
+
+      function win(r) {
+        console.log("Code = " + r.responseCode);
+        console.log("Response = " + r.response);
+        console.log("Sent = " + r.bytesSent);
+
+        // Indicator.close();
+        toast.hide();
+
+        var res = JSON.parse(r.response);
+        var data = res.body.data;
+        var imageUrl = BASE_PATH + data.src + data.name;
+        var imageRelativeUrl = data.src + data.name;
+
+        console.log(imageUrl);
+        var success = res.success;
+        if (success) {
+          if (tag == 1) {
+            console.log("证件照");
+            that.papersPhoto = imageRelativeUrl;
+            if (res.errorCode == "2") {
+              Toast(res.msg);
+            } else {
+              that.setOcrData(res.body.result);
+            }
+          } else if (tag == 2) {
+            console.log("人像照");
+            that.hochFormat = imageRelativeUrl;
+          } else {
+          }
+
+          var image = document.getElementById("myImage" + tag);
+          image.src = imageUrl;
+        } else {
+          Toast(res.msg);
+        }
+      }
+
+      function fail(error) {
+        // alert("An error has occurred: Code = " + error);
+        //console.log("upload error source " + error.source);
+        //console.log("upload error target " + error.target);
+        //  Indicator.close();
+        toast.hide();
+        Toast("上传失败");
+      }
+
+      ft.upload(fileURL, uri, win, fail, options);
+
+      let toastMessage = "";
+      if (tag == 1) {
+        toastMessage = "正在识别身份证信息，请稍后...";
+      } else if (tag == 2) {
+        toastMessage = "正在验证人脸信息，请稍后...";
+      } else {
+        toastMessage = "上传照片中...";
+      }
+      const toast = this.$createToast({
+        txt: toastMessage,
+        time: 0,
+        mask: true
+      });
+      toast.show();
+    },
+
+    //设置OCR身份证识别的数据
+    setOcrData(result) {
+      //民族
+      var nation = result.mz;
+      var nationValue = "";
+      for (var i = 0; i < this.nationData.length; i++) {
+        if (nation + "族" == this.nationData[i].text) {
+          nationValue = this.nationData[i].value;
+          this.sendnationValue = nationValue;
+          break;
+        }
+      }
+
+      //性别
+      var sex = result.sex;
+      var sexValue = "";
+      for (var i = 0; i < this.sexData.length; i++) {
+        if (sex == this.sexData[i].text) {
+          sexValue = this.sexData[i].value;
+
+          this.sendsexValue = sexValue;
+          break;
+        }
+      }
+
+      this.addModel.nameValue = result.name;
+      this.addModel.Idnumber = result.id;
+      this.addModel.sexValue = sexValue;
+      this.addModel.nationValue = nationValue;
+      this.addModel.areaValue = result.address;
+    },
+
+    getTop(e) {
+      var offset = e.offsetTop;
+      // debugger;
+      // cube-scroll-wrapper
+      if (
+        e.offsetParent != null &&
+        e.offsetParent.className != "scroll-list-wrap"
+      ) {
+        offset += this.getTop(e.offsetParent);
+      }
+      return offset;
+    },
+
+    handleInput(event) {
+      // debugger;
+      var ele = event.target;
+
+      var top = this.getTop(ele);
+      // alert(top);
+      console.log(top);
+      // debugger;
+      var contentHeight = document.body.clientHeight - this.keyboardHeight;
+
+      //  var contentHeight
+      console.log("top:" + top);
+      console.log("document.body.clientHeight" + document.body.clientHeight);
+      console.log("contentHeight:" + contentHeight);
+      console.log("ele.offsetHeight:" + ele.offsetHeight);
+
+      if (top > contentHeight) {
+        this.scrollTo(contentHeight - top - ele.offsetHeight - 44);
+      }
+    },
+
+    handleTest() {
+      var scroll = this.$refs.scroll;
+      var bscroll = scroll.scroll;
+      // console.log(bscroll.maxScrollY);
+      // console.log(bscroll.y);
+
+      if (bscroll.y < bscroll.maxScrollY) {
+        scroll.scrollTo(0, bscroll.maxScrollY);
+      }
+    },
+
+    scrollTo(posY) {
+      console.log(posY);
+      this.$refs.scroll.scrollTo(0, posY);
+    },
+
+    hideKeyBoard() {
+      if (typeof Keyboard != "undefined") {
+        if (typeof Keyboard.hide == "function") Keyboard.hide();
+      }
+    },
+    submitHandler(e) {
+      e.preventDefault();
+      console.log("submit", e);
+
+      if (!(this.papersPhoto.length > 0)) {
+        Toast("请选择证件照片");
+        return;
+      }
+
+      if (!(this.hochFormat.length > 0)) {
+        Toast("请选择人像照照片");
+        return;
+      }
+      if (!(this.filtedAddresses.length > 0)) {
+        Toast("请选择绑定地址");
+        return;
+      }
+
+      var that = this;
+      // Indicator.open({
+      //   text: "提交中...",
+      //   spinnerType: "fading-circle"
+      // });
+
+      var reg = /^((13[0-9])|(14[5,7,9])|(15([0-3]|[5-9]))|(166)|(17[0,1,3,5,6,7,8])|(18[0-9])|(19[8|9]))\d{8}$/; //手机号正则验证
+      var regIdCard = /(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}[0-9Xx]$)/;
+      if (!reg.test(this.addModel.phoneValue)) {
+        Toast("手机号码有误，请重新输入");
+        return;
+      }
+      if (!regIdCard.test(this.addModel.Idnumber)) {
+        Toast("身份证号码有误，请重新输入");
+        return;
+      }
+
+      var peopleInfo = {
+        idPic: this.papersPhoto, //证件照
+        lastestPic: this.hochFormat, //近照
+        idNo: this.addModel.Idnumber, //身份证号
+        userName: this.addModel.nameValue, //姓名
+        sex: this.sendsexValue, //性别
+        national: this.sendnationValue, //民族
+        residencePlace: this.addModel.areaValue, //户籍
+        phone: this.addModel.phoneValue, //联系方式
+        plitical: this.sendpoliticsStatus, //政治面貌
+        education: this.sendculture, //文化程度
+        marital: this.sendmarry, //婚姻状况
+        occupation: this.sendoccupation, //从事职业
+        workUnit: this.sendworkUnit, //工作单位
+        residenceType: this.sendhomeTpye, //住所类别
+        cardType: this.sendtypeValue, //办证类型
+        liveReason: this.sendliveFor, //居住事由
+        policeStation: this.sendpolice, //派出所
+        endowmentInsurance: this.sendoldInsurance, //养老保险
+        undertakingsInsurance: this.sendloseInsurance, //失业保险
+        maternityInsurance: this.sendbirthInsurance, //生育保险
+        employmentInjuryInsurance: this.sendhurtInsurance, //工伤保险
+        vocationalTechnicalLevel: this.sendskillLevel //职业技术等级
+      };
+      console.log(JSON.stringify(peopleInfo));
+      console.log(this.filtedAddresses);
+      let toast = this.$createToast({
+        type: "warn",
+        txt: "提交中...",
+        time: 0,
+        mask: true
+      });
+      toast.show();
+      if(this.isResubmit){
+        this.$http({
+        method: "post",
+        url: HOST + "/a/user/audit/againAudit",
+        data: {
+          peopleInfo: JSON.stringify(peopleInfo),
+          address: JSON.stringify(this.filtedAddresses),
+          userId: this.resubmitUserId,
+          addressStatus:this.addressStatus
+        }
+      })
+        .then(data => {
+          console.log(data);
+          toast.hide();
+          if (data.data.success) {
+            Toast(data.data.msg);
+            this.$router.push({ name: "peopleManage" });
+          } else {
+            Toast(data.data.msg);
+          }
+        })
+        .catch(reason => {
+          toast.hide();
+          Toast("提交失败");
+        });
+
+
+      }else{
+        this.$http({
+        method: "post",
+        url: HOST + "/a/owner/lgtOwner/ownerAddPerson",
+        data: {
+          peopleInfo: JSON.stringify(peopleInfo),
+          address: JSON.stringify(this.filtedAddresses)
+        }
+      })
+        .then(data => {
+          console.log(data);
+          toast.hide();
+          if (data.data.success) {
+            Toast(data.data.msg);
+            this.$router.push({ name: "peopleManage" });
+          } else {
+            Toast(data.data.msg);
+          }
+        })
+        .catch(reason => {
+          toast.hide();
+          Toast("提交失败");
+        });
+      }
+      
+    },
+
+    addValidateHandler(result) {
+      this.addValidity = result.validity;
+      this.addValid = result.valid;
+    },
+
+    successerrHandler() {
+      console.log(
+        this.files[0].response.body.data.src +
+          this.files[0].response.body.data.name
+      );
+      this.papersPhoto =
+        this.files[0].response.body.data.src +
+        this.files[0].response.body.data.name;
+    },
+    successerrHandler1() {
+      console.log(
+        this.files1[0].response.body.data.src +
+          this.files1[0].response.body.data.name
+      );
+      this.hochFormat =
+        this.files1[0].response.body.data.src +
+        this.files1[0].response.body.data.name;
+    },
+    addedHandler() {
+      const file = this.files[0];
+      file && this.$refs.upload.removeFile(file);
+    },
+    addedHandler1() {
+      const file1 = this.files1[0];
+      file1 && this.$refs.upload1.removeFile(file1);
+    },
+
+    errHandler(file) {
+      // const msg = file.response.message
+      this.$createToast({
+        type: "warn",
+        txt: "上传失败",
+        time: 1000
+      }).show();
+    },
+    errHandler1(file1) {
+      // const msg = file.response.message
+      this.$createToast({
+        type: "warn",
+        txt: "上传失败",
+        time: 1000
+      }).show();
+    },
+    switch(data, item) {
+      for (var i = 0; i < data.length; i++) {
+        item.push({
+          text: data[i].label,
+          value: data[i].value
+        });
+      }
+    },
+
+    getDict() {
+      this.$http
+        .get(HOST + "/a/mobile/user/register/getDict")
+        .then(response => {
+          // console.log(response.data.data);
+
+          var data = response.data.data;
+          // console.log(data);
+          //民族
+          this.switch(data.nation, this.nationData);
+          //性别
+          this.switch(data.sex, this.sexData);
+
+          //办证类型
+          this.switch(data.cardType, this.typeData);
+          //从事职业
+          this.switch(data.occupation, this.occupationData);
+          //文化程度
+          this.switch(data.degree_education, this.cultureData);
+          //政治面貌
+          this.switch(data.political_outlook, this.politicsStatusData);
+          //婚姻状况
+          this.switch(data.marital_status, this.marryData);
+          //住所类别
+          this.switch(data.residence_type, this.homeTpyeData);
+          //居住事由
+          this.switch(data.live_reason, this.liveForData);
+          //派出所
+          this.switch(data.police_station, this.policeData);
+          //职业技术等级
+          this.switch(data.vocational_technical_level, this.skillLevelData);
+          this.again();
+        });
+
+      this.$http({
+        method: "post",
+        url: HOST + "/a/shops/lgtShops/getShopsByUserId",
+        data: {
+          userId: this.userId
+        }
+      }).then(response => {
+        // console.log(response.data.data);
+        var data = response.data.data;
+        for (var i = 0; i < data.length; i++) {
+          this.workUnitData.push({
+            text: data[i].name,
+            value: data[i].id
+          });
+        }
+      });
+    },
+    getPoliceStaticByAddress(id) {
+      this.$http({
+        method: "post",
+        url: HOST + "/a/lgt/register/peopleAddress/getPoliceStation",
+        data: {
+          addressId: id
+        }
+      }).then(response => {
+        console.log(response);
+        let police = response.data.policeStation;
+        let policeValue = "";
+        for (let i = 0; i < this.policeData.length; i++) {
+          if (police == this.policeData[i].text) {
+            policeValue = this.policeData[i].value;
+            break;
+          }
+        }
+        this.addModel.police = policeValue;
+      });
+    },
+    //重新提交
+    again() {
+      if (this.$route.params.userName) {
+        this.isResubmit = true;
+        console.log("传过来", this.$route.params);
+        var resubmitData = this.$route.params;
+        this.addModel.nameValue = resubmitData.userName;
+        this.addModel.Idnumber = resubmitData.idCard;
+        this.addModel.areaValue = resubmitData.censusRegister;
+        this.addModel.phoneValue = resubmitData.telephone;
+        //性别
+        this.sexData.forEach((ele, index) => {
+          if (ele.value == resubmitData.sex) {
+            this.sendsexValue = ele.value;
+            this.addModel.sexValue = ele.value;
+          }
+        });
+        //民族
+        this.nationData.forEach((ele, index) => {
+          if (ele.value == resubmitData.national) {
+            this.sendnationValue = ele.value;
+            this.addModel.nationValue = ele.value;
+          }
+        });
+        //政治面貌
+        this.politicsStatusData.forEach((ele, index) => {
+          if (ele.value == resubmitData.plitical) {
+            this.sendpoliticsStatus = ele.value;
+            this.addModel.politicsStatus = ele.value;
+          }
+        });
+        //文化程度
+        this.cultureData.forEach((ele, index) => {
+          if (ele.value == resubmitData.education) {
+            this.sendculture = ele.value;
+            this.addModel.culture = ele.value;
+          }
+        });
+        //婚姻状况
+        this.marryData.forEach((ele, index) => {
+          if (ele.value == resubmitData.marital) {
+            this.sendmarry = ele.value;
+            this.addModel.marry = ele.value;
+          }
+        });
+        //从事职业
+        this.occupationData.forEach((ele, index) => {
+          if (ele.value == resubmitData.professional) {
+            this.sendoccupation = ele.value;
+            this.addModel.occupation = ele.value;
+          }
+        });
+        //工作单位
+        this.workUnitData.forEach((ele, index) => {
+          if (ele.value == resubmitData.workUnit) {
+            this.sendworkUnit = ele.value;
+            this.addModel.workUnit = ele.value;
+          }
+        });
+        //住所类别
+        this.homeTpyeData.forEach((ele, index) => {
+          if (ele.value == resubmitData.residenceType) {
+            this.sendhomeTpye = ele.value;
+            this.addModel.homeTpye = ele.value;
+          }
+        });
+        //办证类型
+        this.typeData.forEach((ele, index) => {
+          if (ele.value == resubmitData.papersType) {
+            this.sendtypeValue = ele.value;
+            this.addModel.typeValue = ele.value;
+          }
+        });
+        //居住事由
+        this.liveForData.forEach((ele, index) => {
+          if (ele.value == resubmitData.liveReason) {
+            this.sendliveFor = ele.value;
+            this.addModel.liveFor = ele.value;
+          }
+        });
+        //派出所
+        this.policeData.forEach((ele, index) => {
+          if (ele.value == resubmitData.policeStation) {
+            this.sendpolice = ele.value;
+            this.addModel.police = ele.value;
+          }
+        });
+
+        //申请地址
+        this.resubmitAddress = resubmitData.address;
+        //证件照
+       
+        this.papersPhoto=resubmitData.papersPhoto
+
+       
+         this.myImage1Src=BASE_PATH+ this.papersPhoto
+        //人像照
+         this.hochFormat=resubmitData.hochFormat
+        this.myImage2Src=BASE_PATH+ this.hochFormat
+
+
+          this.resubmitUserId=resubmitData.userId
+          this.addressStatus=resubmitData.addressStatus
+
+      }
+    }
+  },
+
+  created: function() {
+    if (this.$route.params.address) {
+      this.resubmitAddress = this.$route.params.address;
+    }
+ 
+  },
+  beforeMount() {},
+  updated() {},
+  mounted() {
+    this.getDict();
+
+    this.addresses = this.$refs.addressComp.addresses;
+
+
+    this.keyboardWillShowEvent = event => {
+      console.log("FirstBindPage");
+      console.log(event.keyboardHeight);
+      this.keyboardHeight = event.keyboardHeight;
+      // that.keyboardHeight = event.keyboardHeight;
+      // var marginTop =  - event.keyboardHeight + "px";
+      // this.styleObject.marginTop = marginTop;
+    };
+
+    // this.keyboardWillHideEvent = (event) =>{
+    //   this.styleObject.marginTop = '0px';
+    // };
+    window.addEventListener("keyboardWillShow", this.keyboardWillShowEvent);
+    //  window.addEventListener('keyboardWillHide', this.keyboardWillHideEvent)
+  },
+  destroyed() {
+    window.removeEventListener("keyboardWillShow", this.keyboardWillShowEvent);
+    // window.removeEventListener("keyboardWillHide",this.keyboardWillHideEvent)
+  },
+  components: {
+    "address-list": addPersonAddress
+  }
+};
+</script>
+
+
+<style scoped>
+.del {
+  float: right;
+  padding-right: 67px;
+  color: #26a2ff;
+}
+
+.shopback {
+  position: absolute;
+  top: 15px;
+  left: 12px;
+  color: white;
+  font-size: 15px;
+}
+
+.btn {
+  margin: 0 auto;
+  display: block;
+  margin-top: 10px;
+  padding: 17px 16px;
+  width: 95%;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: #fff;
+  background: #4a4c5b;
+  outline: none;
+  border: none;
+  border-radius: 2px;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.shop {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  margin: 0;
+  padding: 0;
+  background-color: white;
+  z-index: 2;
+  /* display: none; */
+}
+
+.addBtn {
+  margin: 0 auto;
+  display: block;
+  margin-top: 10px;
+  padding: 17px 16px;
+  width: 95%;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: #fff;
+  background: #4a4c5b;
+  outline: none;
+  border: none;
+  border-radius: 2px;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.addShop {
+  float: right;
+  padding-right: 25px;
+  padding-top: 5px;
+}
+
+.cube-select {
+  min-height: 46px;
+  border-radius: 0px;
+  padding: 12px 20px 10px 10px;
+}
+
+#selectRole {
+  width: 100%;
+  height: 90px;
+}
+
+.scroll-list-wrap {
+  height: calc(100% - 88px);
+  /* padding-top:40px; */
+}
+
+#firstBinding {
+  height: 100%;
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 20px;
+  color: red;
+  font-style: normal;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#personPhoto {
+  width: 100%;
+  height: 10rem;
+  background: rgb(238, 238, 238);
+}
+
+.line {
+  width: 100%;
+  height: 0.3rem;
+  background: rgb(89, 180, 239);
+}
+
+.mint-cell {
+  width: 94%;
+  float: right;
+  height: 22px;
+  min-height: 30px;
+}
+
+.mint-cell-wrapper {
+  padding: 0 0 !important;
+}
+
+.mint-field .mint-cell-title {
+  width: 94px !important;
+}
+
+#menu {
+  margin-top: 1%;
+}
+
+.btn1 {
+  display: block;
+  margin-top: 20%;
+  width: 53%;
+  border-radius: 20px;
+  margin: 31px auto;
+}
+
+.papers,
+.people {
+  width: 31%;
+  height: 82%;
+  float: left;
+  border: 1px solid;
+  border-radius: 18px;
+  text-align: center;
+  color: white;
+  font-size: 12px;
+}
+
+.papersPhoto,
+.peoplePhoto {
+  width: 100%;
+  height: 74%;
+  /* border: 1px solid red; */
+  margin-top: 13%;
+  background: white;
+  position: relative;
+}
+
+.papers .desc {
+  padding-top: 5px;
+}
+
+.people .desc {
+  padding-top: 5px;
+}
+
+.papers {
+  margin-left: 15%;
+  margin-top: 3%;
+  background: rgb(220, 112, 76);
+}
+
+.people {
+  background: rgb(71, 158, 227);
+  margin-left: 6%;
+  margin-top: 3%;
+}
+
+.cube-upload {
+  position: relative;
+  bottom: 0;
+  /* border: 2px solid; */
+  color: black;
+  height: 100%;
+  text-align: center;
+  line-height: 100%;
+}
+
+.clear-fix {
+  height: 100%;
+}
+
+.cube-upload-file {
+  height: 100%;
+}
+
+.cube-upload-btn {
+  height: 100%;
+}
+
+.cube-upload-file-def {
+  width: 100%;
+  height: 100%;
+}
+
+.creame {
+  color: rgb(218, 218, 218);
+  position: absolute;
+  font-size: 32px;
+  top: 30%;
+  left: 32%;
+}
+
+.add {
+  float: right;
+  line-height: 1;
+  font-size: 23px;
+  margin-right: 13%;
+  margin-left: 3%;
+}
+
+.minus {
+  float: right;
+  line-height: 1;
+  font-size: 23px;
+  margin-right: 14%;
+  margin-left: 4%;
+}
+
+.shopName {
+  padding-left: 30px;
+  margin-top: 5px;
+}
+
+#myImage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /*z-index: 20;*/
+}
+
+#myImage1 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /*z-index: 20;*/
+}
+
+#myImage2 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /*z-index: 20;*/
+}
+</style>
+
+<style>
+.cube-upload-file-def {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.cube-upload .cube-upload-file {
+  height: 100% !important;
+}
+</style>
+<style lang="stylus">
+.shop .mint-cell-value {
+  display: none;
+}
+
+.content .cube-upload {
+  .cube-upload-file, .cube-upload-btn {
+    margin: 0;
+    height: 115px;
+  }
+
+  .cube-upload-file {
+    margin: 0;
+
+    + .cube-upload-btn {
+      margin-top: -115px;
+      opacity: 0;
+    }
+  }
+
+  .cube-upload-file-def {
+    width: 100%;
+    height: 100%;
+
+    .cubeic-wrong {
+      display: none;
+    }
+  }
+
+  .cube-upload-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    > div {
+      text-align: center;
+    }
+
+    i {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      margin-bottom: 20px;
+      font-size: 32px;
+      line-height: 1;
+      font-style: normal;
+      color: #fff;
+      background-color: #333;
+      border-radius: 50%;
+    }
+  }
+}
+
+.question-mark {
+  height: 80%;
+  vertical-align: middle;
+}
+</style>

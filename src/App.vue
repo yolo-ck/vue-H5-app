@@ -1,0 +1,332 @@
+<template>
+  <div id="app">
+    <transition :name="transitionName">
+      <keep-alive :include="keepAlive">
+        <router-view class="child-view"></router-view>
+      </keep-alive>
+    </transition>
+    <!-- <transition :name="transitionName">
+      <router-view class="child-view" v-if="!$route.meta.keepAlive"></router-view>
+    </transition>-->
+  </div>
+</template>
+
+<script>
+import { Dialog } from "vant";
+
+var compareVersions = require("compare-versions");
+
+export default {
+  name: "App",
+  data() {
+    return {
+      transitionName: "slide-left"
+    };
+  },
+  computed: {
+    keepAlive() {
+      return this.$store.getters.keepAlive;
+    }
+  },
+  methods: {
+    checkForNewVersion() {
+      if (typeof device == "undefined") {
+        return;
+      }
+
+      var url =
+        "http://60.12.107.220:9090/client/api/androidversion.json?t=0." +
+        new Date().getTime();
+
+      if (device.platform == "iOS") {
+        url =
+          "http://60.12.107.220:9090/client/api/iosversion.json?t=0." +
+          new Date().getTime();
+      }
+
+      this.$http(url).then(res => {
+        console.log(res);
+
+        if (res.status == 200) {
+          var remoteVersion = res.data.version;
+          var appHttp = res.data.url;
+          var mustUpdate = res.data.forceUpdate;
+          var appRemark = res.data.message;
+
+          console.log("remoteVersion:" + remoteVersion);
+
+          if (typeof cordova != "undefined") {
+            cordova.getAppVersion
+              .getVersionNumber()
+              .then(function(localVersion) {
+                console.log("localVersion:" + localVersion);
+                if (compareVersions(remoteVersion, localVersion) > 0) {
+                  if (mustUpdate == "0") {
+                    Dialog.confirm({
+                      title: "发现新版本：" + remoteVersion,
+                      message: appRemark,
+                      showCancelButton: true,
+                      showConfirmButton: true,
+                      cancelButtonText: "取消",
+                      confirmButtonText: "升级"
+                    }).then(action => {
+                      cordova.InAppBrowser.open(appHttp, "_system");
+                    });
+                  } else {
+                    Dialog.alert({
+                      title: "发现新版本：" + remoteVersion,
+                      message: appRemark,
+                      showCancelButton: false,
+                      showConfirmButton: true,
+                      confirmButtonText: "升级",
+                      closeOnClickModal: false
+                    }).then(() => {
+                      cordova.InAppBrowser.open(appHttp, "_system");
+                    });
+                  }
+                }
+              });
+          } else {
+            Dialog.alert({
+              title: "发现新版本：" + remoteVersion,
+              message: appRemark,
+              showCancelButton: false,
+              showConfirmButton: true,
+              confirmButtonText: "好的",
+              closeOnClickModal: false
+            }).then(action => {});
+          }
+        }
+      });
+    }
+  },
+  mounted() {
+    // debugger;
+
+    this.checkForNewVersion();
+
+    var that = this;
+    document.addEventListener("resume", function() {
+      setTimeout(function() {
+        // TODO: do your thing!
+        that.checkForNewVersion();
+      }, 0);
+    });
+    document.addEventListener(
+      "backbutton",
+      function(evt) {
+        console.log(that.$route.name);
+        if (that.$route.name == "home") {
+          that.$router.push({ name: "login" });
+          return;
+        }
+        if (that.$route.name == "ownerHome") {
+          that.$router.push({ name: "login" });
+          return;
+        }
+
+        if (that.$route.name == "information") {
+          that.$router.push({ name: "ownerPersonCenter" });
+          return;
+        }
+
+        if (that.$route.name == "ownerPersonCenter") {
+          that.$router.push({ name: "ownerHome" });
+          return;
+        }
+        if (that.$route.name == "peopleManage") {
+          that.$router.push({ name: "ownerHome" });
+          return;
+        }
+        if (that.$route.name == "ownerAudit") {
+          that.$router.push({ name: "ownerHome" });
+          return;
+        }
+        if (that.$route.name == "personDetail") {
+          that.$router.push({ name: "peopleManage" });
+          return;
+        }
+
+        if (that.$route.name == "messageChange") {
+          that.$router.push({ name: "peopleManage" });
+          return;
+        }
+
+        if (that.$route.name == "shop") {
+          that.$router.push({ name: "information" });
+          return;
+        }
+        if (that.$route.name == "rentAddress") {
+          that.$router.push({ name: "information" });
+          return;
+        }
+
+        if (that.$route.name == "login") {
+          navigator.app.exitApp(); // app退出
+          return;
+        }
+
+        history.back();
+      },
+
+      false
+    );
+
+    var deviceInfo = {
+      cordova: "",
+      model: "",
+      platform: "",
+      uuid: "",
+      version: "",
+      manufacturer: "",
+      isVirtual: "",
+      serial: ""
+    };
+
+    if (typeof device != "undefined") {
+      this.$store.commit("setUUID", device.uuid);
+      deviceInfo.cordova = device.cordova;
+      deviceInfo.model = device.model;
+      deviceInfo.platform = device.platform;
+      deviceInfo.uuid = device.uuid;
+      deviceInfo.version = device.version;
+      deviceInfo.manufacturer = device.manufacturer;
+      deviceInfo.isVirtual = device.isVirtual;
+      deviceInfo.serial = device.serial;
+    } else {
+      this.$store.commit("setUUID", "dev-pc");
+      this.$store.commit("setLocation", { longitude: 0, latitude: 0 });
+    }
+
+    this.$store.commit("setDeviceInfo", deviceInfo);
+
+    // alert(JSON.stringify(deviceInfo));
+  },
+
+  watch: {
+    $route(to, from) {
+      //    console.log('现在路由:',to.path.split('/')[1],'来自路由:',from.path.split('/')[1],'现在的动画:',this.transitionName)
+      const toDepth = to.path.split("/").length;
+      const fromDepth = from.path.split("/").length;
+
+      if (toDepth == fromDepth) {
+        // debugger;
+        if (to.name == "login" || to.name == "personalCenter") {
+          this.transitionName = "slide-right";
+          return;
+        }
+
+        this.transitionName = "slide-left";
+
+        return;
+      }
+
+      this.transitionName = toDepth < fromDepth ? "slide-right" : "slide-left";
+    }
+  }
+};
+</script>
+
+<style>
+html {
+  height: 100%;
+  width: 100%;
+}
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+#app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+a {
+  text-decoration: none;
+}
+
+.slide-right-enter-active,
+.slide-right-leave-active,
+.slide-left-enter-active,
+.slide-left-leave-active {
+  will-change: transform;
+  transition: all 500ms;
+  position: absolute;
+}
+.slide-right-enter {
+  opacity: 0;
+  /* transform: translate3d(-100%, 0, 0); */
+}
+.slide-right-leave-active {
+  opacity: 0;
+  transform: translate3d(100%, 0, 0);
+}
+.slide-left-enter {
+  opacity: 0;
+  transform: translate3d(100%, 0, 0);
+}
+.slide-left-leave-active {
+  opacity: 0;
+  /* transform: translate3d(-10%, 0, 0); */
+}
+
+/*
+
+.slide-left-enter {
+  transform: translate3d(100%, 0, 0);
+}
+.slide-left-enter-active {
+  transition: all 3.3s;
+}
+
+
+
+
+
+
+.slide-right-leave-to {
+  transform: translate3d(100%, 0, 0);
+}
+.slide-right-leave-active {
+  transition: all 0.3s;
+}
+*/
+
+.page {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: white;
+}
+.changePage {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  margin: 0;
+  padding: 0;
+  background-color: white;
+  z-index: 10;
+}
+/* .van-nav-bar__text {
+  color: black !important;
+  font-size: 16px;
+} */
+.page_transparent {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+/* .slide-leave-active{
+      transition: all 0.3s;
+    opacity: 0;
+  } */
+/* .slide-enter,.slide-leave-to{
+    transform: translate3d(100%, 0, 0);
+  } */
+</style>

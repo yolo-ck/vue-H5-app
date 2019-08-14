@@ -1,0 +1,65 @@
+{
+  "prepare_queue": {
+    "installed": [],
+    "uninstalled": []
+  },
+  "config_munge": {
+    "files": {}
+  },
+  "installed_plugins": {
+    "cordova-plugin-app-version": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-baidumaplocation": {
+      "ANDROID_KEY": "o0wIz1nKuNfGc6ZSdx4O9yGU1HEh97Xp",
+      "IOS_KEY": "VXi6fG6I8vXFnqCO9IKoxTg7xTLHaGh7",
+      "IOS_LOCATION_DESC": "请点击'好'以允许访问。",
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-camera": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-device": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-file": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-file-transfer": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-inappbrowser": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-ionic-keyboard": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-ionic-webview": {
+      "ANDROID_SUPPORT_ANNOTATIONS_VERSION": "27.+",
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-network-information": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-qrscanner": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-splashscreen": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-statusbar": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-whitelist": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    }
+  },
+  "dependent_plugins": {
+    "cordova-plugin-add-swift-support": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    },
+    "cordova-plugin-webserver": {
+      "PACKAGE_NAME": "com.anzhi.huzhou.lgtapp"
+    }
+  }
+}

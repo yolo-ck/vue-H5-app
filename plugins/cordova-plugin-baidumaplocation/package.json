@@ -1,0 +1,69 @@
+{
+  "_from": "cordova-plugin-baidumaplocation@4.0.2",
+  "_id": "cordova-plugin-baidumaplocation@4.0.2",
+  "_inBundle": false,
+  "_integrity": "sha1-0A2xfDYdiV/CPJdUfYL+zrnNblM=",
+  "_location": "/cordova-plugin-baidumaplocation",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "cordova-plugin-baidumaplocation@4.0.2",
+    "name": "cordova-plugin-baidumaplocation",
+    "escapedName": "cordova-plugin-baidumaplocation",
+    "rawSpec": "4.0.2",
+    "saveSpec": null,
+    "fetchSpec": "4.0.2"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "http://registry.npm.taobao.org/cordova-plugin-baidumaplocation/download/cordova-plugin-baidumaplocation-4.0.2.tgz",
+  "_shasum": "d00db17c361d895fc23c97547d82feceb9cd6e53",
+  "_spec": "cordova-plugin-baidumaplocation@4.0.2",
+  "_where": "/Users/Sun/Work/Codes/lgtApp",
+  "author": {
+    "name": "aruis"
+  },
+  "bugs": {
+    "url": "https://github.com/aruis/cordova-plugin-baidumaplocation/issues"
+  },
+  "bundleDependencies": false,
+  "cordova": {
+    "id": "cordova-plugin-baidumaplocation",
+    "platforms": [
+      "android"
+    ]
+  },
+  "deprecated": false,
+  "description": "Cordova Geolocation Plugin,use Baidu Map SDK",
+  "engines": {
+    "cordovaDependencies": {
+      "2.0.0": {
+        "cordova-android": ">=5.0.0"
+      },
+      "3.0.0": {
+        "cordova-android": ">=5.0.0"
+      }
+    }
+  },
+  "homepage": "https://github.com/aruis/cordova-plugin-baidumaplocation#readme",
+  "keywords": [
+    "cordova",
+    "baidu",
+    "location",
+    "geolocation",
+    "device",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios"
+  ],
+  "license": "Apache-2.0",
+  "name": "cordova-plugin-baidumaplocation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aruis/cordova-plugin-baidumaplocation.git"
+  },
+  "version": "4.0.2"
+}

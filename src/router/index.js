@@ -1,0 +1,274 @@
+import Vue from "vue";
+import Router from "vue-router";
+import Registration from "@/pages/Registration";
+import ResetPassword from "@/pages/resetPassword";
+import Login from "@/pages/login";
+import HomePage from "@/pages/homePage";
+import applyForBinding from "@/pages/applyForBinding";
+import auditResult from "@/pages/auditResult";
+import personalCenter from "@/pages/personalCenter";
+import useStep from "@/pages/useStep";
+import firstBinding from "@/pages/firstBinding";
+import QRcode from "@/pages/QRcode";
+import changePWD from "@/pages/changePWD";
+import about from "@/pages/about";
+import openDoor from "@/pages/openDoor";
+import ownerHome from "@/pages/owner/ownerHome";
+import ownerAudit from "@/pages/owner/ownerAudit";
+import addShop from "@/pages/owner/informationChange/addShop";
+import alterShop from "@/pages/owner/informationChange/alterShop";
+import ownerPersonCenter from "@/pages/owner/ownerPersonCenter";
+import information from "@/pages/owner/information";
+import ownerNotice from "@/pages/owner/ownerNotice";
+import auditDetail from "@/pages/owner/auditDetail";
+import peopleManage from "@/pages/owner/peopleManage";
+import personDetail from "@/pages/owner/personDetail";
+import messageChange from "@/pages/owner/messageChange";
+import phone from "@/pages/owner/informationChange/phone";
+import job from "@/pages/owner/informationChange/job";
+import cardType from "@/pages/owner/informationChange/cardType";
+import workAddress from "@/pages/owner/informationChange/workAddress";
+import rentAddress from "@/pages/owner/informationChange/rentAddress";
+import shop from "@/pages/owner/informationChange/shop";
+import ownerAuditResult from "@/pages/owner/ownerAuditResult";
+import selectCommunity from "@/pages/address/selectCommunity";
+import selectBuilding from "@/pages/address/selectBuilding";
+import selectRoom from "@/pages/address/selectRoom";
+import selectCommunity1 from "@/pages/address/selectCommunity1";
+import selectBuilding1 from "@/pages/address/selectBuilding1";
+import selectRoom1 from "@/pages/address/selectRoom1";
+import addPerson from "@/pages/owner/addPerson";
+import question from "@/pages/owner/question";
+import teachPage from "@/pages/owner/teachPage";
+import noticeList from "@/pages/owner/components/notice-list";
+import noticeItem from "@/pages/owner/components/notice-item";
+
+Vue.use(Router);
+
+export default new Router({
+  routes: [
+    {
+      path: "/register",
+      name: "Registration",
+      component: Registration
+    },
+    {
+      path: "/resetpass",
+      name: "Registration",
+      component: ResetPassword
+    },
+
+    {
+      path: "/",
+      name: "login",
+      component: Login
+    },
+    {
+      path: "/home",
+      name: "home",
+      component: HomePage
+    },
+    {
+      path: "/home/applyForBinding",
+      name: "applyForBinding",
+      component: applyForBinding
+    },
+    {
+      path: "/home/auditResult",
+      name: "auditResult",
+      component: auditResult
+    },
+    {
+      path: "/home/personalCenter",
+      name: "personalCenter",
+      component: personalCenter
+    },
+    {
+      path: "/home/useStep",
+      name: "useStep",
+      component: useStep
+    },
+    {
+      path: "/home/firstBinding",
+      name: "firstBinding",
+      component: firstBinding
+      // meta: {
+      //   keepAlive: true
+      // }
+    },
+    {
+      path: "/home/QRcode",
+      name: "QRcode",
+      component: QRcode
+    },
+    {
+      path: "/home/openDoor",
+      name: "openDoor",
+      component: openDoor
+    },
+    {
+      path: "/home/changePWD",
+      name: "changePWD",
+      component: changePWD
+    },
+    {
+      path: "/home/about",
+      name: "about",
+      component: about
+    },
+    {
+      path: "/ownerHome",
+      name: "ownerHome",
+      component: ownerHome
+    },
+
+    {
+      path: "/ownerHome/ownerAudit",
+      name: "ownerAudit",
+      component: ownerAudit
+    },
+    {
+      path: "/ownerHome/information/addShop",
+      name: "addShop",
+      component: addShop
+      // meta: {
+      //   keepAlive: true
+      // }
+    },
+    {
+      path: "/ownerHome/information/alterShop",
+      name: "alterShop",
+      component: alterShop
+      // meta: {
+      //   keepAlive: true
+      // }
+    },
+    {
+      path: "/ownerHome/ownerPersonCenter",
+      name: "ownerPersonCenter",
+      component: ownerPersonCenter
+    },
+    {
+      path: "/ownerHome/ownerAuditResult",
+      name: "ownerAuditResult",
+      component: ownerAuditResult
+    },
+
+    {
+      path: "/ownerHome/information",
+      name: "information",
+      component: information
+    },
+    {
+      path: "/ownerHome/information/phone",
+      name: "phone",
+      component: phone
+    },
+    {
+      path: "/ownerHome/information/job",
+      name: "job",
+      component: job
+    },
+    {
+      path: "/ownerHome/information/cardType",
+      name: "cardType",
+      component: cardType
+    },
+    {
+      path: "/ownerHome/information/workAddress",
+      name: "workAddress",
+      component: workAddress
+    },
+    {
+      path: "/ownerHome/information/rentAddress",
+      name: "rentAddress",
+      component: rentAddress
+    },
+    {
+      path: "/ownerHome/information/shop",
+      name: "shop",
+      component: shop
+    },
+
+    {
+      path: "/ownerHome/ownerNotice",
+      name: "ownerNotice",
+      component: ownerNotice
+    },
+    {
+      path: "/ownerHome/auditDetail",
+      name: "auditDetail",
+      component: auditDetail
+    },
+    {
+      path: "/ownerHome/peopleManage",
+      name: "peopleManage",
+      component: peopleManage
+    },
+    {
+      path: "/ownerHome/personDetail",
+      name: "personDetail",
+      component: personDetail
+    },
+    {
+      path: "/ownerHome/messageChange",
+      name: "messageChange",
+      component: messageChange
+    },
+    {
+      path: "/address/selectCommunity",
+      name: "selectCommunity",
+      component: selectCommunity
+    },
+    {
+      path: "/address/selectBuilding",
+      name: "selectBuilding",
+      component: selectBuilding
+    },
+    {
+      path: "/address/selectRoom",
+      name: "selectRoom",
+      component: selectRoom
+    },
+    {
+      path: "/address/selectCommunity1",
+      name: "selectCommunity1",
+      component: selectCommunity1
+    },
+    {
+      path: "/address/selectBuilding1",
+      name: "selectBuilding1",
+      component: selectBuilding1
+    },
+    {
+      path: "/address/selectRoom1",
+      name: "selectRoom1",
+      component: selectRoom1
+    },
+    {
+      path: "/ownerHome/addPerson",
+      name: "addPerson",
+      component: addPerson
+    },
+    {
+      path: "/ownerHome/question",
+      name: "question",
+      component: question
+    },
+    {
+      path: "/ownerHome/teachPage",
+      name: "teachPage",
+      component: teachPage
+    },
+    {
+      path: "/ownerHome/noticeList",
+      name: "noticeList",
+      component: noticeList
+    },
+    {
+      path: "/ownerHome/noticeItem",
+      name: "noticeItem",
+      component: noticeItem
+    }
+  ]
+});
