@@ -22,7 +22,7 @@
     }
   },
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "compare-versions": "^3.4.0",
     "cordova-android": "^7.1.4",
     "cordova-ios": "^4.5.5",
